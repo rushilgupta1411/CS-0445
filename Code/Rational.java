@@ -2,18 +2,12 @@
  * A class that represents a rational number. 
  * 
  * @author Charles Hoot 
-//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>        
- * @version 4.1 (Modified for the Solution)
-//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+ * @version 4.0
 */
 
 public class Rational
 {
     // PUT PRIVATE DATA FIELDS HERE
-//>>>>>> ADDED CODE >>>>>>>>>>>>>>>>>>>
-    private int numerator;
-    private int denominator;
-//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
     /**
      * The default constructor for objects of class Rational.  Creates the rational number 1.
@@ -21,10 +15,6 @@ public class Rational
     public Rational()
     {       
         // ADD CODE TO THE CONSTRUCTOR
-//>>>>>> ADDED CODE >>>>>>>>>>>>>>>>>>>
-        numerator = 1;
-        denominator = 1;
-//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
     }
 
     /**
@@ -35,13 +25,6 @@ public class Rational
     public Rational(int n, int d)
     {
         // ADD CODE TO THE ALTERNATE CONSTRUCTOR
-//>>>>>> ADDED CODE >>>>>>>>>>>>>>>>>>>
- 		numerator = n;
-        denominator = d;
-        if(denominator == 0)
-            throw new ZeroDenominatorException("Can not have a zero denominator");
-        normalize();
-//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
     }
     
     /**
@@ -52,9 +35,7 @@ public class Rational
     public int getNumerator()
     {
         // CHANGE THE RETURN TO SOMETHING APPROPRIATE
-//>>>>>> REPLACEMENT >>>>>>>>>>>>>>>>>>
-        return numerator;
-//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+        return 0;
     }
     
     /**
@@ -65,9 +46,7 @@ public class Rational
     public int getDenominator()
     {
         // CHANGE THE RETURN TO SOMETHING APPROPRIATE
-//>>>>>> REPLACEMENT >>>>>>>>>>>>>>>>>>
-        return denominator;
-//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+        return 0;
     }
 
 
@@ -79,9 +58,7 @@ public class Rational
     public Rational negate()
     {               
         // CHANGE THE RETURN TO SOMETHING APPROPRIATE
-//>>>>>> REPLACEMENT >>>>>>>>>>>>>>>>>>
-        return new Rational(-1*numerator, denominator);
-//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+        return null;
     }
 
 
@@ -93,9 +70,7 @@ public class Rational
     public Rational invert()
     {               
         // CHANGE THE RETURN TO SOMETHING APPROPRIATE
-//>>>>>> REPLACEMENT >>>>>>>>>>>>>>>>>>
-        return new Rational(denominator, numerator);
-//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+        return null;
     }
 
 
@@ -111,12 +86,7 @@ public class Rational
     public Rational add(Rational other)
     {       
         // ADD NEW CODE AND CHANGE THE RETURN TO SOMETHING APPROPRIATE
-//>>>>>> REPLACEMENT >>>>>>>>>>>>>>>>>>
-        int resultDenominator = denominator*other.denominator;
-        int resultNumerator = numerator*other.denominator + other.numerator*denominator;
-        
-        return new Rational(resultNumerator, resultDenominator);
-//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+        return null;
     }
     
      /**
@@ -128,9 +98,7 @@ public class Rational
     public Rational subtract(Rational other)
     {               
         // CHANGE THE RETURN TO SOMETHING APPROPRIATE
-//>>>>>> REPLACEMENT >>>>>>>>>>>>>>>>>>
-        return add(other.negate());
-//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+        return null;
     }
 
     /**
@@ -142,12 +110,7 @@ public class Rational
     public Rational multiply(Rational other)
     {       
         // ADD NEW CODE AND CHANGE THE RETURN TO SOMETHING APPROPRIATE
-//>>>>>> REPLACEMENT >>>>>>>>>>>>>>>>>>
-        int resultDenominator = denominator*other.denominator;
-        int resultNumerator = numerator*other.numerator ;
-        
-        return new Rational(resultNumerator, resultDenominator);
-//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+        return null;
     }
         
  
@@ -160,9 +123,7 @@ public class Rational
     public Rational divide(Rational other)
     {               
         // CHANGE THE RETURN TO SOMETHING APPROPRIATE
-//>>>>>> REPLACEMENT >>>>>>>>>>>>>>>>>>
-        return multiply(other.invert());
-//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+        return null;
     }
      
  
@@ -176,15 +137,6 @@ public class Rational
     private void normalize()
     {
         // ADD CODE TO NORMALIZE THE RATIONAL NUMBER
-//>>>>>> ADDED CODE >>>>>>>>>>>>>>>>>>>
-         int absNumerator = Math.abs(numerator);
-        int absDenominator = Math.abs(denominator);
-        int signDenominator = denominator/absDenominator;
-        
-        int divideBy = gcd(absNumerator, absDenominator);
-        numerator = (numerator / divideBy) * signDenominator;
-        denominator = (denominator / divideBy) * signDenominator;
-//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
     }
     
     /**
