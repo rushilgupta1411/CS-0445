@@ -4,11 +4,19 @@
  * value when it hits the maximum value.
  * 
  * @author Charles Hoot 
- * @version 4.0
+//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>        
+ * @version 4.1 (Modified for the Solution)
+//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
  */
 public class Counter
 {
     // PUT PRIVATE DATA FIELDS HERE
+//>>>>>> ADDED CODE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+     private int myMin;
+    private int myMax;
+    private int myValue;
+    private boolean hasRolledOver;
+//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
     /**
      * The default constructor for objects of class Counter.  Minimum is 0 and the maximum
@@ -17,6 +25,12 @@ public class Counter
     public Counter()
     {
         // ADD CODE FOR THE CONSTRUCTOR
+//>>>>>> ADDED CODE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+        myMin = 0;
+        myMax = Integer.MAX_VALUE;
+        myValue = myMin;
+        hasRolledOver = false;
+//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
     }
     
     
@@ -29,6 +43,14 @@ public class Counter
     public Counter(int min, int max)
     {
         // ADD CODE FOR THE ALTERNATE CONSTRUCTOR
+//>>>>>> ADDED CODE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+        if(min >= max)
+            throw new CounterInitializationException("minimum value not less than maximum value");
+        myMin = min;
+        myMax = max;
+        myValue = myMin;
+        hasRolledOver = false;
+//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
     }
     
     /**
@@ -43,6 +65,13 @@ public class Counter
         if (otherObject instanceof Counter)
         {
             // YOUR CODE GOES HERE
+//>>>>>> ADDED CODE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+            Counter otherCounter = (Counter) otherObject;
+            result = (myMin == otherCounter.myMin)
+                     && (myMax == otherCounter.myMax)
+                     && (myValue == otherCounter.myValue)
+                     && (hasRolledOver == otherCounter.hasRolledOver);
+//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
         }
         return result;
     }
@@ -55,6 +84,18 @@ public class Counter
     public void increase()
     {
         // ADD CODE TO INCREASE THE VALUE OF THE COUNTER
+//>>>>>> ADDED CODE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+		myValue++;
+        if(myValue > myMax)
+        {
+            myValue = myMin;
+            hasRolledOver = true;
+        }
+        else
+        {
+            hasRolledOver = false;
+        }
+//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
     }
  
  
@@ -64,6 +105,18 @@ public class Counter
     public void decrease()
     {
         // ADD CODE TO INCREASE THE VALUE OF THE COUNTER
+//>>>>>> ADDED CODE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+        myValue--;
+        if(myValue < myMin)
+        {
+            myValue = myMax;
+            hasRolledOver = true;
+        }
+        else
+        {
+            hasRolledOver = false;
+        }
+//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
     }
     
     /**
@@ -74,8 +127,10 @@ public class Counter
     public int value()
     {
         // CHANGE THE RETURN TO GIVE THE CURRENT VALUE OF THE COUNTER
-        return -50;
 		
+//>>>>>> REPLACEMENT >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+        return myValue;
+//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
     }
     
     
@@ -88,7 +143,9 @@ public class Counter
     public boolean rolledOver()
     {
         // CHANGE THE RETURN TO THE ROLLOVER STATUS OF THE COUNTER
-        return true;
+//>>>>>> REPLACEMENT >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+        return hasRolledOver;
+//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
     }
     
     /**
@@ -100,7 +157,12 @@ public class Counter
     public String toString()
     {
         // CHANGE THE RETURN TO A DESCRIPTION OF THE COUNTER
-        return "";		
+//>>>>>> REPLACEMENT >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+        return "Counter: value=" + myValue
+                + " min=" + myMin
+                + " max=" + myMax
+                + " rolled over=" + hasRolledOver;
+//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
     }
  
 }
