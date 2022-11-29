@@ -11,11 +11,9 @@ You should submit `StreamingRadio.java`, the java files for any exception classe
 ## Table of Contents
 
 - [Overview](#overview)
-- [Background](#background)
-- [TASK 1 - Load a puzzle from a 2-d array of letters](#TASK-1---Load-a-puzzle-from-a-2-d-array-of-letters)
-- [TASK 2 - Retrieve a deep copy of the underlying 2-d array of letters](#TASK-2---Retrieve-a-deep-copy-of-the-underlying-2-d-array-of-letters)
-- [TASK 3 - Find a word in the puzzle](#TASK-3---Find-a-word-in-the-puzzle)
-- [Test Program](#test-program)
+- [Details](#details)
+- [Notes](#notes)
+- [Testing](#testing)
 - [Submission Requirements](#submission-requirements)
 - [Rubrics](#rubrics)
 
