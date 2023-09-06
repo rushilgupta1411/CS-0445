@@ -140,7 +140,7 @@ public class Rational
     }
     
     /**
-     * Recursively compute the greatest common divisor of two positive integers
+     * Recursively compute the greatest common divisor of two *positive* integers
      *
      * @param a the first argument of gcd
      * @param b the second argument of gcd

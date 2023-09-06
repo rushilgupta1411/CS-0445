@@ -1,7 +1,8 @@
 
 /**
- * The counter class implements a counter that will roll over to the initial
- * value when it hits the maximum value.
+ * A counter that will roll over to the min
+ * value when attempting to increase it beyond the maximum value and to the max 
+ * value when attempting to decrease it below the min value
  * 
  * @author Charles Hoot 
  * @version 4.0
@@ -54,7 +55,7 @@ public class Counter
      */
     public void increase()
     {
-        // ADD CODE TO INCREASE THE VALUE OF THE COUNTER
+        // ADD CODE TO INCREASE THE VALUE OF THE COUNTER AND HANDLE ROLLOVER
     }
  
  
@@ -63,7 +64,7 @@ public class Counter
      */
     public void decrease()
     {
-        // ADD CODE TO INCREASE THE VALUE OF THE COUNTER
+        // ADD CODE TO DECREASE THE VALUE OF THE COUNTER AND HANDLE ROLLOVER
     }
     
     /**
@@ -74,7 +75,7 @@ public class Counter
     public int value()
     {
         // CHANGE THE RETURN TO GIVE THE CURRENT VALUE OF THE COUNTER
-        return -50;
+        return -1;
 		
     }
     
@@ -88,7 +89,7 @@ public class Counter
     public boolean rolledOver()
     {
         // CHANGE THE RETURN TO THE ROLLOVER STATUS OF THE COUNTER
-        return true;
+        return false;
     }
     
     /**
@@ -100,6 +101,9 @@ public class Counter
     public String toString()
     {
         // CHANGE THE RETURN TO A DESCRIPTION OF THE COUNTER
+        // MUST FOLLOW THE FOLLOWING FORMAT:
+        //Counter: value=1 min=1 max=9 rolled over=false
+
         return "";		
     }
  
