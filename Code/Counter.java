@@ -38,12 +38,14 @@ public class Counter
      * @param  otherObject   the object to test against for equality
      * @return     true if the objects are in the same state
      */
+    @Override
     public boolean equals(Object otherObject)
     {
-        boolean result = true;
+        boolean result = false;
         if (otherObject instanceof Counter)
         {
             // YOUR CODE GOES HERE
+            
         }
         return result;
     }
@@ -104,7 +106,7 @@ public class Counter
         // MUST FOLLOW THE FOLLOWING FORMAT:
         //Counter: value=1 min=1 max=9 rolled over=false
 
-        return "";		
+        return null;		
     }
  
 }

@@ -1,5 +1,7 @@
 /**
- * A class that represents a rational number. 
+ * A class that represents a rational number in normal form where the numerator
+ * and the denominator share no common factors and only the numerator
+ * can be negative.
  * 
  * @author Charles Hoot 
  * @version 4.0
@@ -126,12 +128,11 @@ public class Rational
         return null;
     }
      
- 
- 
+      
  /**
      * Put the rational number in normal form where the numerator
      * and the denominator share no common factors.  Guarantee that only the numerator
-     * is negative.
+     * can be negative.
      *
      */
     private void normalize()
