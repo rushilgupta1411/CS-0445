@@ -56,8 +56,8 @@ There are **eight methods** in the `StreamingRadio` ADT. One of them has been sp
 
 ## NOTES
 
-Assume that the set of users and radio stations are fixed. That way, you do not need to include
-operations to change the collections.
+Assume that the set of users and radio stations are fixed. This is why we do not need to include
+operations to change the user and station collections.
 
 You can use the standard Java exceptions where they make sense. If none of them fits, you can define your exceptions. If you define your own exception, you must create a `.java` file for the exception and submit that file as well.
 Just to remind you, you are specifying the interface to the client. The implementors will use this interface, but they will come up with their own implementation.
