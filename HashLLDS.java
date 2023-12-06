@@ -1,6 +1,9 @@
-/** A HashLLDS is a hybrid of a linear-probing hash table and a linked list.
-* It allows hash table access, and FIFO sequential access.
+
+/** Bonus lab for CS 0445. A HashLLDS is a hybrid of a linear-probing hash table and a linked list.
+ * Key type is String and Value type is generic. HashLLDS allows both hash table 
+ * access using get() and FIFO sequential access using an Iterator.
 * @author Sherif Khattab
+* Some code adopted from Textbook's code by Frank M. Carrano and Timothy M. Henry
 **/
 
 import java.util.Iterator;
@@ -9,13 +12,13 @@ import java.util.NoSuchElementException;
 public class HashLLDS<V> implements Iterable<V> {
   private static final int INIT_CAPACITY = 13;
 
-  private int N;           // number of key-value pairs in the data structure
-  private int M;           // size of hash table
-  private Node<V>[] entries;  // the hash table
-  private Node<V> head;       // head of the linked list
-  private Node<V> tail;       // tail of the linked list
+  private int N; // number of key-value pairs in the data structure
+  private int M; // size of hash table
+  private Node<V>[] entries; // the hash table
+  private Node<V> head; // head of the linked list
+  private Node<V> tail; // tail of the linked list
 
-  // create an empty hash table - use 13 as default size
+  // create an empty hash table
   public HashLLDS() {
     this(INIT_CAPACITY);
   }
@@ -30,135 +33,196 @@ public class HashLLDS<V> implements Iterable<V> {
     N = 0;
   }
 
-  public Iterator<V> iterator() {
-    return new MyIterator();
-  }
-
-
   // insert the key-value pair into the hash table
   public void put(String key, V val) {
-    // double table size if 50% full
-    if (N >= M/2) resize(2*M);
-
     boolean found = false;
-
-    // linear probing
+    // follow the linear-probing probe sequence
     int i;
     for (i = hash(key); entries[i] != null; i = (i + 1) % M) {
-      // update the value if key already exists
+      // update value if key already exists
       if (entries[i].key.equals(key)) {
-        entries[i].value = val; 
+        entries[i].value = val;
         found = true;
       }
     }
 
-    if(!found){
-      // at an empty entry
+    if (!found) {// key wasn't found; need to insert an new entry
+      // i points to an empty entry in the hash table
       entries[i] = new Node<V>(key, val);
 
-      //TODO: insert the node entries[i] into the tail of the linked list in O(1) time.
-      //Don't forget the edge case of inserting into an empty linked list
-      
-      N++;
-    }
+      // TODO: insert the node entries[i] into the tail of the linked list in O(1)
+      // time. Don't forget the edge case of inserting into an empty linked list
 
+      N++;
+      // double table size if 50% full
+      if (N >= M / 2)
+        resize(getNextPrime(2 * M));
+    }
   }
 
   // return the value associated with the given key, null if no such value
   public V get(String key) {
+    // follow the linear-probing probe sequence
     for (int i = hash(key); entries[i] != null; i = (i + 1) % M)
-      if (entries[i].key.equals(key))
-        return entries[i].value;
+      if (entries[i].key.equals(key))// if key was found
+        return entries[i].value; // return corresponding value
     return null;
   }
 
   // hash function for keys - returns value between 0 and M-1
   private int hash(String key) {
-    return (key.hashCode() & 0x7fffffff) % M;
+    // Horner's method followed by modular hashing
+    // hashCode of String implements Horner's method
+    int hash = key.hashCode() % M;
+    if (hash < 0)
+      hash += M;
+    return hash;
   }
 
-  // resize the hash table to the given capacity by re-hashing all of the keys
+  // resize the hash table to the given capacity and re-hash all existing keys
   private void resize(int capacity) {
     HashLLDS<V> temp = new HashLLDS<V>(capacity);
 
-    //TODO: reinsert the entries from this into temp in original FIFO order
-    //You will need to iterate over the linked list of the this object and call
-    //put on the temp object.
-    
-    
+    // TODO: reinsert the existing entries into temp in original FIFO order.
+    // You will need to iterate over the linked list and possibly call
+    // temp.put().
+
+    //shallow copy from temp's variables into this
     entries = temp.entries;
-    head    = temp.head;
-    tail    = temp.tail;
-    M       = temp.M;
+    head = temp.head;
+    tail = temp.tail;
+    M = temp.M;
   }
 
-  public int size(){
+  public int size() {
     return N;
   }
 
-
-  //A class to store nodes of a singly-linked list
-  //Each node contains a (key, value) pair
+  // A class to store nodes of a singly-linked list
+  // Each node contains a (key, value) pair
   private static class Node<T> {
     private String key;
     private T value;
     private Node<T> next;
 
-    Node(String key, T value){
+    Node(String key, T value) {
       this(key, value, null);
     }
 
-    Node(String key, T value, Node<T> next){
+    Node(String key, T value, Node<T> next) {
       this.key = key;
       this.value = value;
       this.next = next;
     }
   }
 
+  public Iterator<V> iterator() {
+    // TODO implement this method
+    return null;
+  }
 
-  public class MyIterator implements Iterator<V> {
-    private Node<V> nextNode;
-
-    public MyIterator() {
-      nextNode = head;
+  private class MyIterator implements Iterator<V> {
+    // TODO add instance variable(s) to keep track of
+    // iterator's cursor 
+    private MyIterator() {
+      // TODO implement the constructor
     }
 
     public boolean hasNext() {
-      return nextNode != null;
+      // TODO implement this method
+      return false;
     }
 
     public V next() {
-      if(!hasNext()){
-        throw new NoSuchElementException("no more items");
-      }
-      V result = nextNode.value;
-      nextNode = nextNode.next;
-      return result;
+      // TODO implement this method to return the next value
+      return null;
+    }
+
+    public void remove() {
+      throw new UnsupportedOperationException("remove() is not implemented for this iterator.");
     }
   }
 
-  private static <V> void show(HashLLDS<V> array){
+  private void show() {
     // print values in order of insertion
     System.out.println("Values in FIFO order:");
     System.out.print("\t");
-    for (V i : array) {
-        System.out.print(i + " ");
+    for (V i : this) {
+      System.out.print(i + " ");
     }
     System.out.println();
 
-    for (int i = 0; i < array.size(); i++) {
-        System.out.println("A[\"Key" + i + "\"] = " + array.get("Key" + i));
+    for (int i = 0; i < N; i++) {
+      System.out.println("A[\"Key" + i + "\"] = " + get("Key" + i));
     }
   }
 
+  // Returns a prime integer that is >= the given integer.
+  private int getNextPrime(int integer) {
+    // if even, add 1 to make odd
+    if (integer % 2 == 0) {
+      integer++;
+    } // end if
+
+    // test odd integers
+    while (!isPrime(integer)) {
+      integer = integer + 2;
+    } // end while
+
+    return integer;
+  } // end getNextPrime
+
+  // Returns true if the given integer is prime.
+  private boolean isPrime(int integer) {
+    boolean result;
+    boolean done = false;
+
+    // 1 and even numbers are not prime
+    if ((integer == 1) || (integer % 2 == 0)) {
+      result = false;
+    }
+
+    // 2 and 3 are prime
+    else if ((integer == 2) || (integer == 3)) {
+      result = true;
+    }
+
+    else // integer is odd and >= 5
+    {
+      assert (integer % 2 != 0) && (integer >= 5);
+
+      // a prime is odd and not divisible by every odd integer up to its square root
+      result = true; // assume prime
+      for (int divisor = 3; !done && (divisor * divisor <= integer); divisor = divisor + 2) {
+        if (integer % divisor == 0) {
+          result = false; // divisible; not prime
+          done = true;
+        } // end if
+      } // end for
+    } // end if
+
+    return result;
+  } // end isPrime
+
   public static void main(String[] args) {
-      HashLLDS<Integer> A = new HashLLDS<>();
+    HashLLDS<Integer> A = new HashLLDS<>();
 
-      for (int i = 200; i >= 0; i--) {
-          //insert ("Key0", 0), ("Key1", 1), ...
-          A.put("Key" + i, i);
-      }
+    for (int i = 200; i >= 0; i--) {
+      // insert ("Key200", 200), ("Key199", 199), ... , ("Key0", 0)
+      A.put("Key" + i, i);
+    }
 
-      show(A);
+    A.show();
+    Iterator<Integer> iter = A.iterator();
+    while(iter.hasNext()){
+      iter.next();
+    }
+    System.out.println();
+    try{
+      iter.next();
+      System.out.println("ERROR: Should raise a NoSuchElementException exception");
+    } catch (NoSuchElementException e){
+      System.out.println("NoSuchElementException raised.");
+    }
   }
 }
