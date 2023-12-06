@@ -13,7 +13,7 @@ public class HashLLDS<V> implements Iterable<V> {
   private static final int INIT_CAPACITY = 13;
 
   private int N; // number of key-value pairs in the data structure
-  private int M; // size of hash table
+  private int M; // capacity of hash table
   private Node<V>[] entries; // the hash table
   private Node<V> head; // head of the linked list
   private Node<V> tail; // tail of the linked list
