@@ -1,12 +1,17 @@
-# CS 0445 – Algorithms and Data Structures 1 – Assignment #4
+# CS 0445 – Algorithms and ADTs 1 – Assignment #3 [^1]
 
-Due: Friday, November 3rd, @ 11:59pm on Gradescope
+Due: Friday, July 10th, @11:59pm on Gradescope
 
-Late submission deadline: Sunday, November 5th, @11:59pm with a 10% penalty per late day
+Late submission deadline: Sunday, July 12th, @11:59pm with a 10% penalty per late day
 
-You should submit `StreamingRadio.java`, the java files for any exception classes you had to define, and the completed Assignment Information Sheet `InfoSheet.md` to the GradeScope link on Canvas. You must also answer the post-assignment quiz on GradeScope per its specified deadline.
+You should: 
+- submit:
+   - `StreamingRadio.java`,
+   - the Java files for any exception classes you had to define, and
+   - the completed Assignment Information Sheet `InfoSheet.md` to the GradeScope link on Canvas.
+- answer the **post-assignment quiz** on GradeScope per its specified deadline.
 
-(_Assignment adapted from Dr. Garrison’s CS 0445 class. Joe Monaco has adapted the assignment as part of his Chancellor's Undergraduate Teaching Fellowship in Spring 2019._)
+ [^1]: Assignment adapted from Dr. Garrison’s CS 0445 class. Joe Monaco has adapted the assignment for his Chancellor's Undergraduate Teaching Fellowship in Spring 2019.
 
 ## Table of Contents
 
@@ -19,19 +24,17 @@ You should submit `StreamingRadio.java`, the java files for any exception classe
 
 ## Overview
  
-Imagine that you are starting a streaming radio business. Partnerships have been established to provide you with audio content; you will stream that content to users. You plan to use your knowledge of what songs your users like/dislike to make effective suggestions for new songs that they will like.
-In this assignment, you will be **only designing** an abstract data type (ADT) for storing the service’s music library and users’ ratings of songs. This ADT will be used by client applications and for administrative uses (like adding new songs to the library). Once you complete this ADT, you could provide it to the programmers of the client applications, and they will be able to develop applications based on this specification. You could also distribute the ADT interface to the programmers in charge of implementing the functionality of the data structure – like what you did with the interfaces in Assignments 1 and 2. Then, these two groups (client programmers and data structure developers) can work in parallel on their respective components; the code of the resulting components will integrate since it follows the “contract” that your ADT provides.
+Imagine that you are starting a streaming radio business. Partnerships have been established to provide audio content, which you will stream to users. You plan to use your knowledge of what songs your users like/dislike to make sensible suggestions for new songs that they will like. In this assignment, you will be **only designing** an abstract data type (ADT) for storing your service’s music library and users’ ratings of songs. This ADT will be used by client applications and for administrative uses (e.g., adding new songs to the library). Once you complete this ADT, you would provide it to the programmers of the client applications, and they would be able to develop applications based on the ADT specification. You could also distribute the ADT interface to the programmers in charge of implementing the functionality of the ADT – like what you did with the interfaces in Assignments 1 and 2. Then, these two groups (client programmers and ADT developers) can work in parallel on their respective components; the code of the resulting components should integrate almost seamlessly since it follows the “contract” that your ADT provides.
 
 
-You will specify the full set of details that **a client needs to know** to use the data structure. You do not need to consider implementation-level details since you are only writing the ADT interface. So, you should refrain from specifying the details of how the operations will be carried out or how the data will be organized in memory. The implementation details should be left up to the implementers.
+You'll need to specify all the details that **a client needs to know** to use the ADT. You do not need to consider implementation-level information since you only write the ADT interface. So, you should refrain from specifying how the operations will be carried out or how the data will be organized in memory. The implementation details should be left up to the implementers.
 
 ## Details
 
-You must write an abstract data type as a Java interface. We have given you the names of several abstract methods the data structure would need to support. You must specify them in the `Javadoc` comments above each method.
+You will specify an Abstract Data Type using a Java interface. We have given you the names of several methods the ADT would need to support. You must specify them using `Javadoc` comments above each method.
 
 
-You should consider all possible **corner cases** in your specification and describe what the class should do in all cases. A client that reads your ADT should know all the things that could go wrong and how each will be handled.
-Error cases should be unambiguous to the client, and the client should always know which specific error was encountered. For some corner cases, you must decide on the best way to handle them. You can make these decisions any way you wish if you are consistent, thorough, and clear in your description.
+In your specification, you should consider as **many edge** cases as possible and describe what the ADT should do in each. A client who reads your ADT should know all the things that could _go wrong_ and how each will be handled. Error cases should be unambiguous to the client, and the client should always know which specific error was encountered. For some corner cases, you must decide on the best way to handle them. You can make these decisions any way you wish if you are consistent, thorough, and clear in your description.
 
 Note that in `Javadoc`, we document parameters using the `@param` name command, return values with `@return`, and exceptions with `@throws`.
 
