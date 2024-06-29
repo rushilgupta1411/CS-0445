@@ -34,7 +34,7 @@ You'll need to specify all the details that **a client needs to know** to use th
 You will specify an Abstract Data Type using a Java interface. We have given you the names of several methods the ADT would need to support. You must specify them using `Javadoc` comments above each method.
 
 
-In your specification, you should consider as **many edge** cases as possible and describe what the ADT should do in each. A client who reads your ADT should know all the things that could _go wrong_ and how each will be handled. Error cases should be unambiguous to the client, and the client should always know which specific error was encountered. For some corner cases, you must decide on the best way to handle them. You can make these decisions any way you wish if you are consistent, thorough, and clear in your description.
+In your specification, you should consider as **many edge** cases as possible and describe what the ADT should do in each. A client who reads your ADT should know all the things that could _go wrong_ and how each will be handled. Error cases should be unambiguous to the client, and the client should always know which specific error was encountered. You must decide on the best way to handle some edge cases. You can make these decisions any way you wish if you are consistent, thorough, and clear in your description.
 
 Note that in `Javadoc`, we document parameters using the `@param` name command, return values with `@return`, and exceptions with `@throws`.
 
@@ -42,7 +42,7 @@ Note that in `Javadoc`, we document parameters using the `@param` name command, 
 The following files are provided to you:
 1. `StreamingRadio.java` – The interface that you will modify.
 2. `User.java`, `Song.java`, and `Station.java` – Provided for you to use as return types and parameters in `StreamingRadio`. You do not need to modify these files.
-3. `src/doc` – Directory containing the `Javadoc.` Open `index.html` with your browser to see the documentation.
+3. `src/doc` is the directory containing the Javadoc. Open `index.html` with your browser to see the documentation.
 
 There are **eight methods** in the `StreamingRadio` ADT. One of them has been specified for you as an example of the kind of specification we are looking for. So, you must complete the specification of the **remaining seven methods**. You will be adding parameters, return types, and exceptions to throw to each. Each has a short description in `StreamingRadio.java`, so read those.
 
@@ -62,8 +62,8 @@ There are **eight methods** in the `StreamingRadio` ADT. One of them has been sp
 Assume that the set of users and radio stations are fixed. This is why we do not need to include
 operations to change the user and station collections.
 
-You can use the standard Java exceptions where they make sense. If none of them fits, you can define your exceptions. If you define your own exception, you must create a `.java` file for the exception and submit that file as well.
-Just to remind you, you are specifying the interface to the client. The implementors will use this interface, but they will come up with their own implementation.
+You can use the standard Java exceptions where they make sense. If none of them fits, you can define your exceptions. If you define your exception, you must create a `.java` file for the exception and submit that file as well.
+To remind you, you are specifying the interface to the client. The implementors will use this interface, but they will come up with their implementation.
 **YOU ARE NOT IMPLEMENTING THE METHODS.**
 
 ## TESTING
@@ -82,7 +82,7 @@ You must submit your Github repository to GradeScope. We will only grade the fol
 3. The filled Assignment Information Sheet `InfoSheet.md`
 
 _The idea from your submission is that your TA (and/or the autograder if available) can compile and run your programs from the command line WITHOUT ANY additional files or changes, so be sure to test it thoroughly before submitting it. If the TA (and/or the autograder if available) cannot compile or run your submitted code, it will be graded as if the program does not work.
-If you can't get the programs working as given, please make sure to indicate any changes you made and clearly indicate why on your Assignment Information Sheet.  You will lose some credit for not getting it to work properly, but getting the main programs to work with modifications is better than not getting them to work at all.  A template for the Assignment Information Sheet can be found in this repository. You do not have to use this template, but your sheet should contain the same information._
+If you can't get the programs working as given, please indicate any changes you made and why on your Assignment Information Sheet.  You will lose some credit for not getting it to work properly, but getting the main programs to work with modifications is better than not getting them to work.  A template for the Assignment Information Sheet can be found in this repository. You do not have to use this template, but your sheet should contain the same information._
 
 _Note: If you use an IDE, such as NetBeans, Eclipse, or IntelliJ, to develop your programs, make sure the programs will compile and run on the command line before submitting – this may require some modifications to your program (e.g., removing package information)._
 
