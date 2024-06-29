@@ -1,8 +1,8 @@
 # CS 0445 – Algorithms and ADTs 1 – Assignment #3 [^1]
 
-Due: Friday, July 10th, @11:59pm on Gradescope
+Due: Friday, July 12th, @11:59pm on Gradescope
 
-Late submission deadline: Sunday, July 12th, @11:59pm with a 10% penalty per late day
+Late submission deadline: Sunday, July 14th, @11:59pm with a 10% penalty per late day
 
 You should: 
 - submit:
