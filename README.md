@@ -1,101 +1,189 @@
-# CS 0445 – Algorithms and ADTs 1 – Assignment #3 [^1]
+# CS 0445 – Assignment #3 - Java API Design: Library System [^1]
 
-You should: 
-- submit:
-   - `StreamingRadio.java`,
-   - the Java files for any exception classes you had to define, and
-   - the completed Assignment Information Sheet `InfoSheet.md` to the GradeScope link on Canvas.
-- answer the **post-assignment quiz** on GradeScope per its specified deadline.
+[^1] Assignment adapted from Dr. Garrison’s CS 0445 class. Joe Monaco has adapted the assignment for his Chancellor's Undergraduate Teaching Fellowship in Spring 2019.
 
- [^1]: Assignment adapted from Dr. Garrison’s CS 0445 class. Joe Monaco has adapted the assignment for his Chancellor's Undergraduate Teaching Fellowship in Spring 2019.
+You should:
+
+* Submit:
+  * `LibrarySystem.java`
+  * Any custom exception classes you define (e.g., `OverdueUserException.java`)
+* Answer the **post-assignment quiz** on GradeScope per its specified deadline
+
+**Note:** This assignment was developed with the help of OpenAI ChatGPT to brainstorm and generate parts of the scaffolding and documentation files to speedup prototyping.
 
 ## Table of Contents
 
-- [Overview](#overview)
-- [Details](#details)
-- [Notes](#notes)
-- [Testing](#testing)
-- [Submission Requirements](#submission-requirements)
-- [Rubrics](#rubrics)
+* [Overview](#overview)
+* [Details](#details)
+* [Null Safety](#null-safety)
+* [Exceptions vs Optional](#exceptions-vs-optional)
+* [Common Constraints](#common-constraints)
+* [Notes](#notes)
+* [Testing](#testing)
+* [Submission Requirements](#submission-requirements)
+* [Rubrics](#rubrics)
 
 ## Overview
- 
-Imagine that you are starting a streaming radio business. Partnerships have been established to provide audio content, which you will stream to users. You plan to use your knowledge of what songs your users like/dislike to make sensible suggestions for new songs that they will like. In this assignment, you will be **only designing** an abstract data type (ADT) for storing your service’s music library and users’ ratings of songs. This ADT will be used by client applications and for administrative uses (e.g., adding new songs to the library). Once you complete this ADT, you would provide it to the programmers of the client applications, and they would be able to develop applications based on the ADT specification. You could also distribute the ADT interface to the programmers in charge of implementing the functionality of the ADT – like what you did with the interfaces in Assignments 1 and 2. Then, these two groups (client programmers and ADT developers) can work in parallel on their respective components; the code of the resulting components should integrate almost seamlessly since it follows the “contract” that your ADT provides.
 
+In this assignment, you will **design a Java interface** for a library management backend system. The interface will define a contract for managing users, books, and libraries: including borrowing, returning, and reserving books; computing fines; and more.
 
-You'll need to specify all the details that **a client needs to know** to use the ADT. You do not need to consider implementation-level information since you only write the ADT interface. So, you should refrain from specifying how the operations will be carried out or how the data will be organized in memory. The implementation details should be left up to the implementers.
+Your job is to define this contract by writing **complete and detailed ****************************************************`Javadoc`**************************************************** specifications** for the methods in the interface. This design should guide both the developers of the system and any clients who use it (e.g., UI programmers, admin tools).
+
+You are **not** implementing the system — only writing the API.
 
 ## Details
 
-You will specify an Abstract Data Type using a Java interface. We have given you the names of several methods the ADT would need to support. You must specify them using `Javadoc` comments above each method.
+You will modify the `LibrarySystem.java` file. It contains a list of method names related to key library operations.
 
+* One method (`borrowBook`) has been completed for you as an example. It includes:
 
-In your specification, you should consider as **many edge** cases as possible and describe what the ADT should do in each. A client who reads your ADT should know all the things that could _go wrong_ and how each will be handled. Error cases should be unambiguous to the client, and the client should always know which specific error was encountered. You must decide on the best way to handle some edge cases. You can make these decisions any way you wish if you are consistent, thorough, and clear in your description.
+  * Parameters (`User`, `Book`, `Library`, and a `dueDate`)
+  * A meaningful return value
+  * Clear and exhaustive Javadoc that covers:
 
-Note that in `Javadoc`, we document parameters using the `@param` name command, return values with `@return`, and exceptions with `@throws`.
+    * Normal behavior
+    * Error conditions
+    * Exceptions thrown
 
+* Your task is to complete **the remaining methods** with:
 
-The following files are provided to you:
-1. `StreamingRadio.java` – The interface that you will modify.
-2. `User.java`, `Song.java`, and `Station.java` – Provided for you to use as return types and parameters in `StreamingRadio`. You do not need to modify these files.
-3. `src/doc` is the directory containing the Javadoc. Open `index.html` with your browser to see the documentation.
+  * Realistic parameters
+  * Return types (if needed)
+  * Proper exceptions (Java standard or custom)
+  * Rich, clear `Javadoc` comments documenting:
 
-There are **eight methods** in the `StreamingRadio` ADT. One of them has been specified for you as an example of the kind of specification we are looking for. So, you must complete the specification of the **remaining seven methods**. You will be adding parameters, return types, and exceptions to throw to each. Each has a short description in `StreamingRadio.java`, so read those.
+    * Each parameter (`@param`)
+    * The return value (`@return`)
+    * All thrown exceptions (`@throws`)
+    * All corner and error cases clients should know
 
-1. `addSong`
-2. `removeSong`
-3. `addToStation`
-4. `removeFromStation`
-5. `rateSong`
-6. `clearRating `(This one has been completed for you. You can change it for your needs, if you want.)
-7. `predictRating`
-8. `suggestSong`
+## Null Safety
 
-**You are not required to write implementations of these methods.**
+Your methods must handle and clearly **document what happens if a ****************************************************`null`**************************************************** parameter is passed**. For example:
 
-## NOTES
-
-Assume that the set of users and radio stations are fixed. This is why we do not need to include
-operations to change the user and station collections.
-
-You can use the standard Java exceptions where they make sense. If none of them fits, you can define your exceptions. If you define your exception, you must create a `.java` file for the exception and submit that file as well.
-To remind you, you are specifying the interface to the client. The implementors will use this interface, but they will come up with their implementation.
-**YOU ARE NOT IMPLEMENTING THE METHODS.**
-
-## TESTING
-
-You’re not writing any code, but you are writing documentation, and your interface should compile with `javac`. You won’t be able to run it, of course. Use this command to produce documentation,
+```java
+@throws NullPointerException if the `book` or `user` is null
 ```
+
+This tells the client:
+
+* That nulls are not allowed
+* That they need to check before calling your method
+
+Use `NullPointerException` when:
+
+* The client violates the contract by passing `null`
+* The method *cannot proceed meaningfully* with a `null` input
+
+Avoid silently ignoring or tolerating `null` values unless absolutely required.
+
+## Exceptions vs Optional
+
+When writing the API, you may face cases where a method might **fail** or **produce no result**. Here’s how to decide what to return:
+
+### Use `Exception` when:
+
+* The method is **misused** (e.g., user already has the book)
+* The failure is **unexpected** or represents a rule violation
+
+Example:
+
+```java
+@throws IllegalStateException if the book is already borrowed
+```
+
+### Use `Optional<T>` when:
+
+* A method might *legitimately* have **no result**
+* The failure is **expected and not exceptional**
+
+Example:
+
+```java
+Optional<Book> suggestBook(User user);
+```
+
+This is appropriate if the system **couldn’t find a good suggestion** but everything was used correctly.
+
+> ✨ For this assignment, you may use `Optional<T>` or exceptions, but **be consistent and justify your choice** in the Javadoc.
+
+## Common Constraints
+
+When designing your methods, be sure to consider constraints like:
+
+* ✅ **User eligibility**:
+
+  * Has overdue books?
+  * Reached borrowing limit?
+* ✅ **Book availability**:
+
+  * Already borrowed or reserved?
+  * Belongs to a different library?
+* ✅ **Date checks**:
+
+  * Is the due date in the future?
+  * Is the book past due?
+* ✅ **Reservation logic**:
+
+  * Is the user already in the queue?
+  * Is the book available now?
+* ✅ **Object identity**:
+
+  * Does the user/book/library exist in the system?
+  * Is the user registered at the library?
+
+You must document these in your Javadoc using `@throws` clauses and detailed method descriptions.
+
+## Notes
+
+* You should **not** implement the methods — only write the interface.
+* You may use standard Java exceptions (`IllegalArgumentException`, `IllegalStateException`, `NullPointerException`).
+* If none fit, you may create a custom exception (e.g., `OverdueUserException.java`). Be sure to submit the class file with the assignment.
+* Assume that user and library collections are fixed and pre-populated.
+
+## Testing
+
+You are writing documentation, not code. However, your `LibrarySystem.java` file must **compile without errors**, and you should be able to generate clean documentation using:
+
+```bash
 javadoc -d doc *.java
 ```
 
+Check that:
+
+* All methods are documented
+* Javadoc runs without warnings
+* The interface compiles using `javac`
+
 ## Submission Requirements
 
-You must submit your Github repository to GradeScope. We will only grade the following files:
+Submit your Github repository to GradeScope with the following files:
 
-1. `StreamingRadio.java `after completing the `Javadoc` specifications of all the methods
-2. The Java files for any exception class that you needed to define
-3. The filled Assignment Information Sheet `InfoSheet.md`
+1. `LibrarySystem.java` — complete with full `Javadoc`
+2. Any custom exception `.java` files, if needed
 
-_The idea from your submission is that your TA (and/or the autograder if available) can compile and run your programs from the command line WITHOUT ANY additional files or changes, so be sure to test it thoroughly before submitting it. If the TA (and/or the autograder if available) cannot compile or run your submitted code, it will be graded as if the program does not work.
-If you can't get the programs working as given, please indicate any changes you made and why on your Assignment Information Sheet.  You will lose some credit for not getting it to work properly, but getting the main programs to work with modifications is better than not getting them to work.  A template for the Assignment Information Sheet can be found in this repository. You do not have to use this template, but your sheet should contain the same information._
+Your interface must:
 
-_Note: If you use an IDE, such as NetBeans, Eclipse, or IntelliJ, to develop your programs, make sure the programs will compile and run on the command line before submitting – this may require some modifications to your program (e.g., removing package information)._
+* Compile cleanly
+* Be fully documented with Javadoc
+* Use standard Java types or those provided (`User`, `Book`, `Library`)
+* Have no missing return types, parameter types, or annotations
 
-## Rubrics 
+💡 *Make sure your code compiles without packages, and works from the command line.*
 
-Just so you know, if an autograder is available, its score will be used as guidance for the TA, not as an official final score. Please also note that the autograder rubrics are the definitive rubrics for the assignment. The TA will use the rubrics below to assign partial credit if your code scores <= 40% of the autograder score. If your code is manually graded for partial credit, the maximum you can get for the auto-graded part is 60% of the total autograder score.
+## Rubrics
 
-Item|Points
-----|------
-Code compiles (correct form)|	5
-`Javadoc`generates documentation without error | 5 points
-Specification of addSong | 8 points
-Specification of removeSong | 8 points
-Specification of addToStation | 12 points
-Specification of removeFromStation |  12 points
-Specification of rateSong | 12 points
-predictRating | 14 points
-Specification of suggestSong | 12 points
-Post-assignment quiz on GradeScope | 7 points
-Assignment Information Sheet | 5 points
+| Item                                          | Points  |
+| --------------------------------------------- | ------- |
+| Code compiles (correct form)                  | 5       |
+| Javadoc generates documentation without error | 5       |
+| Specification of returnBook                   | 10       |
+| Specification of registerUser                 | 9      |
+| Specification of reserveBook                  | 12       |
+| Specification of cancelReservation            | 10      |
+| Specification of reportLostBook               | 10      |
+| Specification of computeFine                  | 10     |
+| Specification of transferBookBetweenLibraries | 12      |
+| Specification of suggestBook                  | 10       |
+| Post-assignment quiz on GradeScope            | 7       |
+| **Total**                                     | **100** |
