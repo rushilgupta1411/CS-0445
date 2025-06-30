@@ -1,6 +1,6 @@
 # CS 0445 – Assignment #3 - Java API Design: Library System [^1]
 
-[^1] Assignment adapted from Dr. Garrison’s CS 0445 class. Joe Monaco has adapted the assignment for his Chancellor's Undergraduate Teaching Fellowship in Spring 2019.
+[^1]: Assignment adapted from Dr. Garrison’s CS 0445 class. Joe Monaco has adapted the assignment for his Chancellor's Undergraduate Teaching Fellowship in Spring 2019.
 
 You should:
 
