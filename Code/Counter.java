@@ -9,7 +9,7 @@
  */
 public class Counter
 {
-    // PUT PRIVATE DATA FIELDS HERE
+    private int test;
 
     /**
      * The default constructor for objects of class Counter.  Minimum is 0 and the maximum
