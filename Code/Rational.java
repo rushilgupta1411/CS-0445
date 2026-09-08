@@ -9,14 +9,15 @@
 
 public class Rational
 {
-    // PUT PRIVATE DATA FIELDS HERE
-
+    private int numerator;
+    private int denominator;
     /**
      * The default constructor for objects of class Rational.  Creates the rational number 1.
      */
     public Rational()
     {       
-        // ADD CODE TO THE CONSTRUCTOR
+        this.numerator=1;
+        this.denominator=1;
     }
 
     /**
@@ -26,7 +27,14 @@ public class Rational
      */    
     public Rational(int n, int d)
     {
-        // ADD CODE TO THE ALTERNATE CONSTRUCTOR
+        if (d==0){
+            throw new ZeroDenominatorException("Denominator cannot be zero");
+        }
+        else{
+            this.numerator=n;
+            this.denominator=d;
+            this.normalize();
+        }
     }
     
     /**
@@ -36,8 +44,7 @@ public class Rational
      */
     public int getNumerator()
     {
-        // CHANGE THE RETURN TO SOMETHING APPROPRIATE
-        return 0;
+        return this.numerator;
     }
     
     /**
@@ -47,8 +54,7 @@ public class Rational
      */
     public int getDenominator()
     {
-        // CHANGE THE RETURN TO SOMETHING APPROPRIATE
-        return 0;
+        return this.denominator;
     }
 
 
@@ -59,8 +65,7 @@ public class Rational
      */    
     public Rational negate()
     {               
-        // CHANGE THE RETURN TO SOMETHING APPROPRIATE
-        return null;
+        return new Rational(-this.numerator, this.denominator);
     }
 
 
@@ -71,8 +76,7 @@ public class Rational
      */    
     public Rational invert()
     {               
-        // CHANGE THE RETURN TO SOMETHING APPROPRIATE
-        return null;
+        return new Rational(this.denominator, this.numerator);
     }
 
 
@@ -87,8 +91,9 @@ public class Rational
      */    
     public Rational add(Rational other)
     {       
-        // ADD NEW CODE AND CHANGE THE RETURN TO SOMETHING APPROPRIATE
-        return null;
+        return new Rational(this.numerator * other.denominator
+                            + other.numerator * this.denominator,
+                            this.denominator * other.denominator);
     }
     
      /**
@@ -99,20 +104,21 @@ public class Rational
      */    
     public Rational subtract(Rational other)
     {               
-        // CHANGE THE RETURN TO SOMETHING APPROPRIATE
-        return null;
+        return new Rational(this.numerator * other.denominator
+                            - other.numerator * this.denominator,
+                            this.denominator * other.denominator);
     }
 
     /**
      * Multiply two rational numbers
      *
      * @param other the second argument of multiply
-     * @return a new rational number that is the sum of this object and the other rational.
+     * @return a new rational number that is the product of this object and the other rational.
      */    
     public Rational multiply(Rational other)
     {       
-        // ADD NEW CODE AND CHANGE THE RETURN TO SOMETHING APPROPRIATE
-        return null;
+        return new Rational(this.numerator * other.numerator,
+                            this.denominator * other.denominator);
     }
         
  
@@ -124,8 +130,8 @@ public class Rational
      */    
     public Rational divide(Rational other)
     {               
-        // CHANGE THE RETURN TO SOMETHING APPROPRIATE
-        return null;
+        return new Rational(this.numerator * other.denominator,
+                            this.denominator * other.numerator);
     }
      
       
@@ -137,7 +143,13 @@ public class Rational
      */
     private void normalize()
     {
-        // ADD CODE TO NORMALIZE THE RATIONAL NUMBER
+        int g=this.gcd(Math.abs(this.numerator), Math.abs(this.denominator));
+        this.numerator /= g;
+        this.denominator /= g;
+        if (this.denominator < 0){
+            this.numerator = -this.numerator;
+            this.denominator = -this.denominator;
+        }
     }
     
     /**
