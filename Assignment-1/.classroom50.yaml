@@ -1,0 +1,12 @@
+schema: "classroom50/repo-config/v1"
+classroom: "cs0445-2271"
+assignment: "cs0445-assignment1"
+owner:
+  username: "rushilgupta1411"
+  id: 177865682
+  accepted_at: "2026-09-08T15:05:46Z"
+source:
+  owner: "cs0445-2271"
+  owner_id: 321041915
+  repo: "cs0445-assignment1"
+  branch: "main"
