@@ -274,7 +274,7 @@ class LList<T> implements ListInterface<T> {
 
     /*********************************************************************
      *
-     * METHODS TO BE COMPLETED
+     * LIST EXTENSIONS
      *
      ***********************************************************************/
 
@@ -283,7 +283,19 @@ class LList<T> implements ListInterface<T> {
      */
     public void reverse() {
 
-        // CODE TO BE COMPLETED
+        Node previousNode = null;
+        Node currentNode = firstNode;
+
+        while (currentNode != null) {
+            // Save the remaining chain before reversing this link.
+            Node nextNode = currentNode.getNextNode();
+            currentNode.setNextNode(previousNode);
+            previousNode = currentNode;
+            currentNode = nextNode;
+        }
+
+        // The former last node is now first; the entry count is unchanged.
+        firstNode = previousNode;
 
     }
 }
