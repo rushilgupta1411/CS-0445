@@ -1,16 +1,14 @@
-# **CS 0445 Assignment 1: Pushback Goal Manager**
+# **CS 0445 Assignment 2: Pushback Goal Manager — Linked List Edition**
 
-## **🤖 Objective**
+## **🎯 Objective**
 
-In this assignment, you will implement a pair of array-based data structures modeling the scoring goal from a robotics competition game: a **drum** (a small, single-opening rotating ring used to load cubes) and a **tunnel** (a longer tube with two open ends, into which the drum feeds cubes one at a time). You must use only **plain Java arrays** to implement all storage — no `ArrayList`, `LinkedList`, `HashMap`, `Queue`, `Deque`, `Stack`, or any other `java.util` container class is allowed anywhere in your implementation.
+This is the **exact same interface** as Assignment 1 — every method, every parameter, every documented behavior is identical. If you implemented Assignment 1 correctly, you already know precisely what this assignment's class needs to do. What's different is **how you're allowed to build it**.
 
-You will fill in the methods of `PushbackGoalArrayImpl.java`, which implements the provided interface `PushbackGoalInterface<T>`.
+In Assignment 1, you stored the drum and tunnel using plain Java arrays. In this assignment, **you may not use an array as your storage** (and, as before, no `java.util` container classes either). Instead, you must build your own **linked list** — a chain of node objects, each holding a value and reference(s) to other node(s) — and implement every operation, including indexed access like `getDrumAt()`/`getTunnelAt()`, by traversing that chain rather than indexing into an array.
 
-**Important:** the tunnel can *only* be loaded through the drum. There is no method that lets you insert an arbitrary value directly into the tunnel — every cube that ever enters the tunnel had to be fed into the drum first and then transferred across.
+Specifically, you must use a **doubly-linked** structure (each node holds both a `next` and a `prev` reference, not just `next`). This isn't just an arbitrary restriction — it makes one part of the assignment genuinely elegant: with `prev` references available, `loadTunnelFromDrum`'s two cases (a gap exists nearby vs. the tunnel is completely full) turn out to be *the same operation*. In both cases, you find a target node, detach it from wherever it currently sits, overwrite its value, and reattach it at the mouth you're inserting into. You'll want to discover this yourself rather than have it spelled out further here — but if your solution ends up with two very different-looking branches for those two cases, that's a sign you're fighting the data structure instead of using it.
 
-The game engine (`PushbackGame.java`) is a **bonus** file for experimentation after your implementation is complete. It is a basic, text-based simulator that lets you feed, rotate, load, sweep, block, and score. Bonus credit can be earned by extending it further.
-
-**Note:** This assignment was developed with the assistance of an AI assistant to facilitate brainstorming and generate portions of the scaffolding and documentation files, thereby accelerating the prototyping process.
+**Note:** This assignment was developed with the assistance of an AI assistant to facilitate brainstorming and generate portions of the scaffolding and documentation files, thereby accelerating the prototyping process. This was done over multiple iterations, with full manual read-through and edits.
 
 ---
 
@@ -24,43 +22,22 @@ The game engine (`PushbackGame.java`) is a **bonus** file for experimentation af
 │   │   └── java/
 │   │       ├── TunnelEnd.java
 │   │       ├── PushbackGoalInterface.java
-│   │       ├── PushbackGoalArrayImpl.java   # Your implementation goes here
-│   │       └── PushbackGame.java            # Bonus simulator (text-based)
+│   │       └── PushbackGoalLinkedListImpl.java   # Your implementation goes here
 │   └── test/
 │       └── java/
-│           └── PushbackGoalTest.java        # JUnit test cases
+│           └── PushbackGoalTest.java             # JUnit 4 test cases
 ```
 
 ---
 
 ## **⚙️ Compilation & Running Tests**
 
-You can use GitHub Codespaces to run, compile, and test this assignment entirely in the cloud — no local setup required.
-
-If working locally, you'll need Maven installed:
-
-### **Linux/macOS**
-```
-sudo apt install maven   # on Ubuntu/Debian
-brew install maven       # on macOS
-```
-
-### **Windows**
-1. Download from: [https://maven.apache.org/download.cgi](https://maven.apache.org/download.cgi)
-2. Extract to a folder like `C:\Program Files\Apache\maven`
-3. Set environment variable `MAVEN_HOME` to that folder
-4. Add `%MAVEN_HOME%\bin` to your system `PATH`
-5. Open a new command prompt and type `mvn -v` to verify installation
-
-### **🔨 Compile the Project**
 ```
 mvn compile
-```
-
-### **✅ Run Tests**
-```
 mvn test
 ```
+
+GitHub Codespaces works out of the box; locally, you'll need Maven installed (`mvn -v` to check, or see Maven's install docs for your OS).
 
 ---
 
@@ -71,134 +48,49 @@ To debug JUnit test cases in VS Code, follow these steps:
 ### **Prerequisites:**
 
 * Install the **Java Extension Pack** in VS Code.
-* You may need to install version **0.40.0** of the **Test Runner for Java** extension if debugging options do not appear.
-* You will need to reload your VS Code window and make sure that a Java Project is detected by expanding Java Projects and clicking on Import Project.
+* The folder must be imported/opened as a Java project before the green run/debug arrow icons will appear next to test methods — if they're missing, check the Java Projects panel or run "Java: Reload Projects" from the command palette.
+* You may need to install version **0.40.0** of the **Test Runner for Java** extension if the green arrows do not appear. You will need to reload your VS Code window and make sure that a Java Project is detected by expanding Java Projects and clicking on Import Project.
 
 #### **Steps:**
 
-1. Open a test file in the editor.
+1. Open the test file in the editor.
 2. Set breakpoints by clicking on the gutter next to the line numbers.
 3. Right-click on the gutter next to the line number of the test method name and select **Debug Test**.
 4. Use the debug toolbar to step through code, inspect variables, and view call stacks.
 
-This allows you to easily verify internal state, control flow, and ensure correctness of your implementation.
+Since every operation now involves pointer-chasing instead of array indexing, a debugger that lets you inspect `next`/`prev` references at each step is especially valuable here — print statements showing node addresses are much harder to reason about than watching the actual reference graph in a debugger.
 
 ---
 
-## 🎮 Running the Simulator (Bonus)
+## **📘 What's the Same, What's Different**
 
-```
-mvn compile
-mvn exec:java -Dexec.mainClass=PushbackGame
-```
+Every method signature, parameter, return value, and documented edge case in `PushbackGoalInterface.java` is unchanged from Assignment 1 — re-read that assignment's spec for the full behavioral details. Nothing about *what* the class does has changed.
 
-Or with javac/java directly:
-```
-cd src/main/java
-javac *.java
-java PushbackGame
-```
+One method deserves special mention: **`removeAllOfValue`'s code does not need to change at all between Assignment 1 and this one.** Look back at what that method is actually built from — a loop that calls `rotateDrum(1)`, `feedDrum()`, and `ejectDrum()`, and nothing else. It never reaches into the drum's storage directly, so it has no idea whether that storage is an array or a linked list, and it doesn't need to know. As long as the three methods it depends on behave correctly, `removeAllOfValue` behaves correctly automatically, regardless of what's underneath them. If you find yourself rewriting or "porting" this method's logic for the new implementation, that's a sign something else is off — the whole point of programming to an interface is that code like this shouldn't have to care what changed underneath it.
 
-Commands: `FEED <value>`, `EJECT`, `ROTATE <steps>`, `LOAD <L|R>`, `DUMP <L|R>`, `SWEEP <index> <L|R>`, `BLOCK <L|R>`, `UNBLOCK <L|R>`, `CONTROL <start> <end>`, `Q` to quit.
+What's different is purely internal:
 
-> This simulator is basic. You're encouraged to implement additional features (GUI, scoring over time, multiple goals, alliance tracking, etc.) for bonus credit.
+* No array (`T[]`, `Object[]`, etc.) may be used as your storage for the drum or the tunnel.
+* No `java.util` container class may be used anywhere (`ArrayList`, `LinkedList`, `HashMap`, `Queue`, `Deque`, `Stack`, etc. — these are examples, not an exhaustive list).
+* You must build your own node-based, **doubly-linked** structure (each node has both a `next` and a `prev` reference) and use it for both the drum (a fixed-capacity ring — think about how you represent "the opening" and what rotating actually needs to move) and the tunnel (a fixed-capacity chain with two ends). Use the same node class for both.
 
----
+A few things worth thinking about as you design your node class and its operations:
 
-## **📘 Interface and Method Details**
-
-### The Drum
-
-The drum is a small, fixed-capacity **ring** with exactly one accessible opening. You can only add or remove a cube at that opening; the only way to access any other cube is to rotate the whole ring.
-
-#### `initializeDrum(int capacity, T emptyValue)`
-Sets up the drum with every slot equal to `emptyValue`.
-
-#### `feedDrum(T value)`
-Places `value` at the opening. Returns `false` (does nothing) if the opening is already occupied.
-
-#### `ejectDrum()`
-Removes and returns whatever is at the opening. **Throws `IllegalStateException`** if the opening is empty.
-
-#### `rotateDrum(int steps)`
-Rotates the *entire* ring — including empty slots — by `steps` positions. **Positive steps rotate toward the opening**: after `rotateDrum(1)`, whatever cube was one slot away from the opening is now sitting at the opening. Negative steps rotate the opposite way, away from the opening.
-
-#### `getDrumAt(int index)` / `drumCapacity()`
-Inspection only — for testing and the simulator. Don't use these inside `removeAllOfValue()` (see below).
-
-#### `removeAllOfValue(T value)`
-Removes every cube in the drum matching `value`, **using only `rotateDrum(1)`, `feedDrum()`, and `ejectDrum()`** — no direct indexing into your own backing array anywhere in this method's logic. Non-matching cubes must end up back in the drum in their original relative (cyclic) order; matching cubes simply vanish, leaving their slots empty.
-
-**The algorithm:** for exactly `drumCapacity()` iterations: eject whatever is at the opening; if it doesn't match `value`, feed it right back into the (now-empty) opening; if it does match, just leave the opening empty; then rotate by 1. After a full cycle, you're back where you started, and only the value you targeted is missing.
-
-**Worked example** (drum capacity 4, opening shown first): starting drum `[C, A, B, A]`, calling `removeAllOfValue('A')`:
-
-| Step | Eject | Match? | Action | Drum after rotate(1) |
-|---|---|---|---|---|
-| 1 | C | no | feed C back | `[A, B, A, C]` |
-| 2 | A | yes | leave empty | `[B, A, C, .]` |
-| 3 | B | no | feed B back | `[A, C, ., B]` |
-| 4 | A | yes | leave empty | `[C, ., B, .]` |
-
-Result: 2 cubes removed, final drum `[C, ., B, .]` — notice this is exactly the *original* array with every `A` zeroed out in place. That's not a coincidence: since the method rotates by exactly `capacity()` total, the ring returns to its starting alignment, so the net effect is always "the original layout, minus the target value." Use this as a sanity check on your own implementation.
-
-### The Tunnel
-
-The tunnel is a longer fixed-capacity tube with two ends, `TunnelEnd.LEFT` and `TunnelEnd.RIGHT`.
-
-#### `initializeTunnel(int capacity, T emptyValue)`
-Sets up the tunnel with every slot equal to `emptyValue`. Neither end starts blocked.
-
-#### `setBlocked(TunnelEnd end, boolean blocked)` / `isBlocked(TunnelEnd end)`
-Represents a defensive robot sitting at an opening. **While an end is blocked, no cube may enter, exit, or be vacated into through that end, by any operation.** A cube already resting at that boundary slot when the block is applied is *not* moved — it simply stays stuck there until the end is unblocked, or until an arm sweep clears it out through the **other**, unblocked end (see `sweepAt` below).
-
-#### `sweepAt(int index, TunnelEnd sweepToward)`
-The robot arm reaches in from the top at `index` and reaches toward `sweepToward`'s mouth, covering every slot from `index` to that mouth (inclusive). Slots on the far side of `index` (away from `sweepToward`) are left completely untouched, since they're outside the sweep's reach.
-
-- **If that end is not blocked:** every cube in the swept range is removed from the tunnel entirely (set to `emptyValue`). Returns the number of cubes cleared.
-- **If that end is blocked:** the cubes can't be vacated out through it, so instead of clearing, the arm just **compacts** them — every non-empty cell in the range gets pushed as close to the blocked mouth as possible, keeping their relative order, and the empty cells end up bunched together on the far side of the range instead of disappearing. No cube is actually removed, so this returns `0`, even though the tunnel's contents may have shifted.
-
-**Worked example (unblocked):** tunnel `[C, B, A]` (capacity 3), `sweepAt(1, TunnelEnd.LEFT)` clears indices 0 and 1 (`C` and `B`), leaving `[., ., A]`. Calling `sweepAt(1, TunnelEnd.RIGHT)` instead would clear indices 1 and 2 (`B` and `A`), leaving `[C, ., .]`.
-
-**Worked example (freeing a stuck cube):** tunnel `[C, B, A]`, left end blocked. `sweepAt(0, TunnelEnd.LEFT)` returns `0` and changes nothing (no gap inside a single-cell range to compact) — the sweep would need to vacate `C` out the blocked left mouth. But `sweepAt(0, TunnelEnd.RIGHT)` succeeds normally, sweeping indices 0 through 2 out through the *unblocked* right end, clearing all three cubes.
-
-**Worked example (blocked compaction with an actual gap):** tunnel `[C, A, ., B, D]` (capacity 5), right end blocked. `sweepAt(1, TunnelEnd.RIGHT)` covers indices 1–4 (`[A, ., B, D]`). Reading from the mouth (index 4) backward, the non-empty cells are `D`, `B`, `A` in that order — they get packed against the wall in that same order, and the one empty cell ends up at the near edge of the range: result `[C, ., A, B, D]`. Notice `A` moved from index 1 to index 2, and the gap moved from index 2 to index 1 — everything shifted one step closer to the blocked mouth, but nothing left the tunnel, so the return value is still `0`.
-
-#### `getTunnelAt(int index)` / `tunnelCapacity()`
-Inspection only.
-
-#### `determineControl(int startIndex, int endIndex)`
-Scans the inclusive slot range `[startIndex, endIndex]` (the "control zone") and returns whichever value holds a **strict majority** (more than half) of the non-empty slots in that range — or `null` if there's a tie, no clear majority, or the zone has no cubes at all.
-
-### The Bridge — the only way into the tunnel
-
-#### `loadTunnelFromDrum(TunnelEnd end)`
-Transfers exactly one cube: ejects whatever's at the drum's opening (returns `false` immediately if the opening is empty) and attempts to insert it into the tunnel at `end`:
-- **Fails immediately if `end` itself is blocked** — a robot sitting right at the mouth you're trying to insert into stops the cube from ever entering.
-- Otherwise, scans from that mouth for the nearest empty slot and shifts the occupied chain up to it, one slot per cube in that chain (the **number of cubes shifted** varies — sometimes 0, sometimes many, depending on how close the nearest gap is), placing the new cube right at the mouth.
-- If there's no gap anywhere (tunnel completely full), the *entire* tunnel shifts toward the far end and whatever's sitting there gets evicted — **unless that far end is blocked**, in which case the insertion fails outright, even though the block is on the opposite side from where you're inserting.
-
-If the tunnel insertion fails for any reason (either of the two blocked cases above), the ejected cube is fed straight back into the drum before returning `false`.
-
-#### `dumpDrumIntoTunnel(TunnelEnd end)`
-Empties the **entire** drum into the tunnel at `end`. Since the drum only exposes one opening, this must rotate between attempts to reach every physical slot: for up to `drumCapacity()` steps, skip (and rotate past) any slot that's currently empty, and call `loadTunnelFromDrum(end)` on any slot that has a cube. If a transfer ever fails because the **tunnel** rejected it (as opposed to the drum simply being empty at that slot), stop immediately — that cube is already back in the drum — and don't rotate any further. Returns the count of cubes successfully transferred.
-
----
-
-## ✏️ Implementation Header
-
-```java
-public class PushbackGoalArrayImpl<T> implements PushbackGoalInterface<T> { ... }
-```
+* **The drum's `prev` reference won't get much use.** Every drum operation — feeding, ejecting, rotating, even `removeAllOfValue` — can be done by only ever following `next` (rotating "backward" is just rotating "forward" by `capacity - steps`). That's fine and expected; the requirement to build the drum with the same doubly-linked node type as the tunnel is for consistency (one node class, not two), not because the drum's own logic demands `prev`. If you want to think further: a `prev` reference *would* let you rotate in whichever direction is fewer steps (useful for a rotation close to a full loop on a large drum) — that's a nice thing to notice, not something you need to implement.
+* **The drum is circular.** A ring is naturally a circularly-linked list — the last node's `next` should point back to the first. Rotating the ring is then just a matter of moving a reference to "which node is currently the opening," not moving any data.
+* **`getDrumAt(index)`/`getTunnelAt(index)` require traversal.** Unlike an array, there's no O(1) random access here — walking `index` steps from a known starting point is expected and fine.
+* **The tunnel's total node count never changes.** Just like Assignment 1's array had a fixed length, your linked list should always have exactly `capacity` nodes for the lifetime of the tunnel. Insertions and evictions *reposition* nodes; they don't create or destroy them.
+* **`sweepAt`'s blocked-compaction case doesn't need any structural relinking at all.** Packing non-empty values toward one end while preserving order can be done by walking two references through the affected range and swapping *values* between nodes — no array, and no need to touch `next`/`prev` for this particular operation.
+* **`removeAllOfValue` still may only call `rotateDrum(1)`, `feedDrum()`, and `ejectDrum()`** — same restriction as Assignment 1, and the same algorithm works unchanged, since it never needed to know how the drum stores things in the first place.
 
 ---
 
 ## **🚫 Restrictions**
 
-* ✅ **You may only modify one file**: `PushbackGoalArrayImpl.java`.
-* 💡 **Bonus (optional)**: You may modify `PushbackGame.java` once your implementation is complete.
-* ❌ **You may NOT use any Java container classes** (`ArrayList`, `LinkedList`, `HashMap`, `HashSet`, `Queue`, `Deque`, `Stack`, etc. — these are just examples). Only plain Java arrays (`T[]`) are allowed anywhere in your storage or logic.
-* ⚠️ Violating these restrictions may result in a **zero** for the implementation portion.
+* You may only modify `PushbackGoalLinkedListImpl.java`.
+* No array may be used as your primary storage for the drum or tunnel.
+* No `java.util` container classes anywhere.
+* Violating either restriction may result in a **zero** for the implementation portion, regardless of whether the behavioral tests pass — a correct-behaving `ArrayList`-backed (or array-backed) submission is not a correct submission for this assignment.
 
 ---
 
@@ -208,18 +100,7 @@ public class PushbackGoalArrayImpl<T> implements PushbackGoalInterface<T> { ... 
 mvn test
 ```
 
-`PushbackGoalTest.java` includes worked examples matching the ones in this README — if a test fails, set a breakpoint at the start of the failing test method and step through with the debugger (see the Debugging section above) to see exactly where your implementation's state diverges from the README's worked example.
-
----
-
-## **🏁 Bonus**
-
-`PushbackGame.java` is a working text-based simulator once your class is implemented. Bonus credit may be awarded for:
-
-* A GUI frontend
-* Live scoring over a simulated match timer
-* Multiple goals / alliance tracking
-* Randomized "robot defense" scenarios that toggle blocking automatically
+`PushbackGoalTest.java` is behaviorally identical to Assignment 1's test suite (same scenarios, same expected values) — it only calls the public interface, so it can't tell whether your storage is an array or a linked list. That's by design: your job is to make the same behavior emerge from a different internal structure.
 
 ---
 
@@ -235,12 +116,11 @@ mvn test
 | `determineControl`                                                      | 10      |
 | `loadTunnelFromDrum` (nearest-gap shift, full-tunnel eviction, blocking)  | 15      |
 | `dumpDrumIntoTunnel` (full-drum traversal via rotation)                 | 10      |
-| Code style, comments, and modularity                                    | 5       |
-| **Total (excluding bonus)**                                            | **100** |
-| Bonus (above 100): simulator extensions                                | 10      |
+| Code style, comments, and modularity (including no arrays/containers)   | 5       |
+| **Total**                                                              | **100** |
 
 ### **💡 Grading Guidelines**
 
 * The core features above are graded using Gradescope's autograder, with both visible and hidden test cases.
-* If your autograder score is below 60%, your code will be manually reviewed for partial credit — but manual grading can award no more than 60% of the total autograder points.
-* `Code style, comments, and modularity` is graded manually: meaningful names, proper indentation, helper methods to reduce duplication, and comments explaining non-obvious logic (especially around blocking checks and the sweep vs. shift distinction).
+* If your autograder score is below 60%, your code will be manually reviewed for partial credit — manual grading can award no more than 60% of the total autograder points.
+* The `Code style, comments, and modularity` line is anchored by a **hidden automated test** that scans your submitted file for array-type declarations (`T[]`, `Object[]`, etc.) and `java.util` container class usage — if it finds either, this line scores 0 regardless of anything else, since a working array- or container-backed submission is not a correct submission for this assignment. If that check passes, the full 5 points are available, with manual review still able to deduct within that same 5-point budget for genuinely poor style (unclear names, no comments on the pointer-manipulation logic, excessive duplication). This is one combined 5-point line, not two separate ones.

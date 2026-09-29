@@ -9,7 +9,7 @@ public class PushbackGame {
     private static final char EMPTY = '.';
 
     public static void main(String[] args) {
-        PushbackGoalInterface<Character> goal = new PushbackGoalArrayImpl<>();
+        PushbackGoalInterface<Character> goal = new PushbackGoalLinkedListImpl<>();
         goal.initializeDrum(DRUM_CAPACITY, EMPTY);
         goal.initializeTunnel(TUNNEL_CAPACITY, EMPTY);
 

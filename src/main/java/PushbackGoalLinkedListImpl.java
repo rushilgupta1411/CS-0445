@@ -1,22 +1,22 @@
-// PushbackGoalArrayImpl.java
+// PushbackGoalLinkedListImpl.java
 //
-// TODO: Implement every method below. Only plain Java arrays may be
-// used to store the drum's and tunnel's contents -- no ArrayList,
-// LinkedList, HashMap, Queue, Deque, Stack, or any other java.util
-// container class.
+// TODO: Implement every method below. This is the EXACT SAME interface
+// as Assignment 1 -- the observable behavior of every method must be
+// identical. What's different is the restriction: you may NOT use a
+// plain Java array (or any java.util container class) as your
+// storage. You must build your own linked list out of nodes (a
+// private nested class with a value and next/prev references is the
+// standard approach) and implement every operation -- including
+// indexed access like getDrumAt()/getTunnelAt() -- by traversing that
+// list, not by indexing into an array.
 
-/**
- * Array-based implementation of a drum + tunnel pushback scoring goal.
- *
- * You are free to choose your internal representation for each part
- * (e.g. a single backing array plus an "opening index" for the drum) as
- * long as it is built entirely from plain Java arrays.
- */
-public class PushbackGoalArrayImpl<T> implements PushbackGoalInterface<T> {
+public class PushbackGoalLinkedListImpl<T> implements PushbackGoalInterface<T> {
 
-    // TODO: declare your fields here (backing arrays, capacities,
-    // emptyValue(s), an "opening index" for the drum, blocked flags for
-    // the tunnel's two ends, initialized flags, etc.)
+    // TODO: declare your fields here. You'll need a node class (make
+    // it a private static nested class, with a value
+    // field and next/prev references) plus whatever head/tail/opening
+    // references and capacity/emptyValue/initialized flags you need
+    // for the drum and tunnel.
 
     // ------------------------------------------------------------------
     // Drum
@@ -42,7 +42,9 @@ public class PushbackGoalArrayImpl<T> implements PushbackGoalInterface<T> {
 
     @Override
     public void rotateDrum(int steps) {
-        // TODO
+        // TODO: think about this in terms of moving a reference to
+        // "which node is currently the opening" rather than moving
+        // data around, the way the array version had to.
         throw new UnsupportedOperationException("rotateDrum() not implemented yet");
     }
 
@@ -61,7 +63,7 @@ public class PushbackGoalArrayImpl<T> implements PushbackGoalInterface<T> {
     @Override
     public int removeAllOfValue(T value) {
         // TODO: implement using ONLY rotateDrum(1), feedDrum(), and
-        // ejectDrum() -- no direct indexing into your drum array here.
+        // ejectDrum() -- no direct access to your node references here.
         throw new UnsupportedOperationException("removeAllOfValue() not implemented yet");
     }
 
@@ -110,7 +112,7 @@ public class PushbackGoalArrayImpl<T> implements PushbackGoalInterface<T> {
         // TODO
         throw new UnsupportedOperationException("determineControl() not implemented yet");
     }
-
+    
     // ------------------------------------------------------------------
     // Bridge
     // ------------------------------------------------------------------

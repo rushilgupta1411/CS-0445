@@ -9,7 +9,7 @@ public class PushbackGoalTest {
 
     @Test
     public void testFeedAndEjectDrum() {
-        PushbackGoalInterface<Character> g = new PushbackGoalArrayImpl<>();
+        PushbackGoalInterface<Character> g = new PushbackGoalLinkedListImpl<>();
         g.initializeDrum(3, '.');
         assertTrue(g.feedDrum('A'));
         assertEquals(Character.valueOf('A'), g.getDrumAt(0));
@@ -20,20 +20,20 @@ public class PushbackGoalTest {
 
     @Test(expected = IllegalStateException.class)
     public void testEjectEmptyDrumThrows() {
-        PushbackGoalInterface<Character> g = new PushbackGoalArrayImpl<>();
+        PushbackGoalInterface<Character> g = new PushbackGoalLinkedListImpl<>();
         g.initializeDrum(3, '.');
         g.ejectDrum();
     }
 
     @Test(expected = IllegalStateException.class)
     public void testDrumMethodBeforeInitialize() {
-        PushbackGoalInterface<Character> g = new PushbackGoalArrayImpl<>();
+        PushbackGoalInterface<Character> g = new PushbackGoalLinkedListImpl<>();
         g.drumCapacity();
     }
 
     @Test(expected = IndexOutOfBoundsException.class)
     public void testGetDrumAtOutOfBounds() {
-        PushbackGoalInterface<Character> g = new PushbackGoalArrayImpl<>();
+        PushbackGoalInterface<Character> g = new PushbackGoalLinkedListImpl<>();
         g.initializeDrum(3, '.');
         g.getDrumAt(3);
     }
@@ -45,7 +45,7 @@ public class PushbackGoalTest {
      * up one slot further from the opening each time.
      */
     private PushbackGoalInterface<Character> buildDrumDABC() {
-        PushbackGoalInterface<Character> g = new PushbackGoalArrayImpl<>();
+        PushbackGoalInterface<Character> g = new PushbackGoalLinkedListImpl<>();
         g.initializeDrum(4, '.');
         g.feedDrum('A'); g.rotateDrum(1);
         g.feedDrum('B'); g.rotateDrum(1);
@@ -91,7 +91,7 @@ public class PushbackGoalTest {
      * Builds drum = [C, A, B, A] (opening at slot 0) via feed/rotate.
      */
     private PushbackGoalInterface<Character> buildDrumCABA() {
-        PushbackGoalInterface<Character> g = new PushbackGoalArrayImpl<>();
+        PushbackGoalInterface<Character> g = new PushbackGoalLinkedListImpl<>();
         g.initializeDrum(4, '.');
         g.feedDrum('C'); g.rotateDrum(1); // [.,.,.,C]
         g.feedDrum('A'); g.rotateDrum(1); // [.,.,C,A]
@@ -131,7 +131,7 @@ public class PushbackGoalTest {
     // ------------------------------------------------------------------
 
     private PushbackGoalInterface<Character> freshGoal(int drumCap, int tunnelCap) {
-        PushbackGoalInterface<Character> g = new PushbackGoalArrayImpl<>();
+        PushbackGoalInterface<Character> g = new PushbackGoalLinkedListImpl<>();
         g.initializeDrum(drumCap, '.');
         g.initializeTunnel(tunnelCap, '.');
         return g;
@@ -398,7 +398,7 @@ public class PushbackGoalTest {
 
     @Test
     public void testDumpDrumIntoTunnelTransfersEntireDrum() {
-        PushbackGoalInterface<Character> g = new PushbackGoalArrayImpl<>();
+        PushbackGoalInterface<Character> g = new PushbackGoalLinkedListImpl<>();
         g.initializeDrum(4, '.');
         g.initializeTunnel(5, '.');
 
@@ -426,7 +426,7 @@ public class PushbackGoalTest {
 
     @Test
     public void testDumpDrumIntoTunnelStopsIfBlocked() {
-        PushbackGoalInterface<Character> g = new PushbackGoalArrayImpl<>();
+        PushbackGoalInterface<Character> g = new PushbackGoalLinkedListImpl<>();
         g.initializeDrum(4, '.');
         g.initializeTunnel(3, '.');
         g.setBlocked(TunnelEnd.LEFT, true);
@@ -444,7 +444,7 @@ public class PushbackGoalTest {
 
     @Test
     public void testDrumWithIntegerType() {
-        PushbackGoalInterface<Integer> g = new PushbackGoalArrayImpl<>();
+        PushbackGoalInterface<Integer> g = new PushbackGoalLinkedListImpl<>();
         g.initializeDrum(3, 0); // 0 represents an empty slot here
 
         g.feedDrum(5);
@@ -470,7 +470,7 @@ public class PushbackGoalTest {
 
     @Test
     public void testTunnelAndControlZoneWithStringType() {
-        PushbackGoalInterface<String> g = new PushbackGoalArrayImpl<>();
+        PushbackGoalInterface<String> g = new PushbackGoalLinkedListImpl<>();
         g.initializeDrum(1, "EMPTY");
         g.initializeTunnel(3, "EMPTY");
 
@@ -491,7 +491,7 @@ public class PushbackGoalTest {
 
     @Test
     public void testRemoveAllOfValueWithStringType() {
-        PushbackGoalInterface<String> g = new PushbackGoalArrayImpl<>();
+        PushbackGoalInterface<String> g = new PushbackGoalLinkedListImpl<>();
         g.initializeDrum(3, "EMPTY");
 
         // Build drum = [RED, RED, BLUE] via feed/rotate

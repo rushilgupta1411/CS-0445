@@ -1,8 +1,8 @@
 // PushbackGoalInterface.java - Behavior contract for the drum + tunnel scoring goal
 
 /**
- * An interface representing the array-based operations for a "pushback"
- * style scoring goal made of two parts:
+ * An interface representing the operations for a "pushback" style
+ * scoring goal made of two parts:
  *
  * <ul>
  *   <li>A DRUM: a small fixed-capacity rotating ring with a single
@@ -15,9 +15,12 @@
  *       no way to insert an arbitrary value into the tunnel directly.</li>
  * </ul>
  *
- * All storage must be implemented using plain Java arrays. No
- * java.util container classes (ArrayList, LinkedList, HashMap, Deque,
- * Queue, Stack, etc.) may be used anywhere in the implementation.
+ * This is the exact same interface used in Assignment 1. What changes
+ * in this assignment is the internal storage: Assignment 1 required
+ * plain Java arrays; this assignment requires a self-built linked
+ * list (nodes with next/prev references) instead. No java.util
+ * container classes are allowed in either assignment, and no arrays
+ * may be used as the primary storage in this one.
  */
 public interface PushbackGoalInterface<T> {
 
@@ -138,20 +141,22 @@ public interface PushbackGoalInterface<T> {
 
     /**
      * The robot arm reaches in at the top and sweeps every cube from
-     * index all the way to the given end's mouth (inclusive of index).
+     * index all the way to the given end's mouth (inclusive of index)
+     * out of the tunnel, setting all of those slots to emptyValue. No
+     * shifting occurs -- slots beyond the swept range (on the far side
+     * of index, away from sweepToward) are left completely untouched.
      *
      * If sweepToward's end is NOT blocked, every cube in that range is
-     * removed from the tunnel entirely (set to emptyValue). Slots
-     * beyond the swept range (on the far side of index, away from
-     * sweepToward) are left completely untouched.
+     * removed from the tunnel entirely (set to emptyValue). Returns the
+     * number of cubes cleared.
      *
      * If sweepToward's end IS blocked, the cubes can't be vacated out
-     * through it, so instead the arm just compacts them: every
-     * non-empty cell within the range is pushed as close to the
-     * blocked mouth as possible, preserving relative order, and any
-     * empty cells end up bunched together on the far side of the
-     * range (away from the mouth) instead of disappearing. No cube is
-     * actually removed in this case.
+     * through it, so instead the arm just compacts them -- every
+     * non-empty cell within the range gets pushed as close to the
+     * blocked mouth as possible, preserving relative order, and the
+     * empty cells end up bunched together on the far side of the range
+     * instead of disappearing. No cube is actually removed in this
+     * case, so this returns 0.
      *
      * @param index       the starting index for the sweep
      * @param sweepToward which end the sweep clears (or compacts) toward
@@ -188,8 +193,9 @@ public interface PushbackGoalInterface<T> {
      *
      * @param startIndex the first index of the control zone (inclusive)
      * @param endIndex   the last index of the control zone (inclusive)
-     * @return the value holding a strict majority in the zone, or null
-     *         if there is a tie or no single value holds a majority
+     * @return the value holding a strict majority in the zone, or
+     *         null if there is a tie or no single value holds a
+     *         majority
      * @throws IndexOutOfBoundsException if startIndex or endIndex is out
      *                                    of range, or startIndex > endIndex
      * @throws IllegalStateException     if the tunnel is not initialized
@@ -206,22 +212,14 @@ public interface PushbackGoalInterface<T> {
      * tunnel -- there is no method to insert an arbitrary value into
      * the tunnel directly.
      *
-     * Ejects the cube at the drum's opening (failing immediately,
-     * returning false, if the opening is empty). Then attempts to
-     * insert it into the tunnel at the given end:
-     *
-     * <ul>
-     *   <li>Fails immediately (before touching the tunnel at all) if
-     *       {@code end} itself is currently blocked.</li>
-     *   <li>Otherwise, finds the nearest empty slot from that mouth and
-     *       shifts the occupied chain up to it, one slot per cube in
-     *       that chain -- the number of cubes shifted varies depending
-     *       on how close the nearest gap is -- placing the new cube at
-     *       the mouth.</li>
-     *   <li>If the tunnel has no gaps at all, shifts the whole tunnel
-     *       and evicts the opposite end -- unless that opposite end is
-     *       blocked, in which case the insertion fails.</li>
-     * </ul>
+     * Fails immediately if end itself is currently blocked. Otherwise,
+     * finds the nearest empty slot from that mouth and shifts the
+     * occupied chain up to it, one slot per cube in that chain -- the
+     * number of cubes shifted varies depending on how close the
+     * nearest gap is -- placing the new cube at the mouth. If the
+     * tunnel has no gaps at all, shifts the whole tunnel and evicts the
+     * opposite end -- unless that opposite end is blocked, in which
+     * case the insertion fails.
      *
      * If the tunnel insertion fails for either of the above reasons,
      * the cube that was ejected from the drum is fed back into the
