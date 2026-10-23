@@ -78,10 +78,29 @@ public class StackSort {
      */
     public static int[] doStackSort(int data[]) {
 
-    int result[] = new int[data.length];
+        int result[] = new int[data.length];
+        StackInterface<Integer> lowerValues = new VectorStack<Integer>();
+        StackInterface<Integer> upperValues = new VectorStack<Integer>();
 
+        for (int value : data) {
+            // Keep lowerValues largest-first and upperValues smallest-first.
+            // Move the boundary until this value fits between the two tops.
+            while (!lowerValues.isEmpty() && lowerValues.peek() > value) {
+                upperValues.push(lowerValues.pop());
+            }
+            while (!upperValues.isEmpty() && upperValues.peek() < value) {
+                lowerValues.push(upperValues.pop());
+            }
+            upperValues.push(value);
+        }
 
-    // ADD CODE HERE TO SORT THE ARRAY USING TWO STACKS
+        // Reversing the lower stack puts every value in ascending pop order.
+        while (!lowerValues.isEmpty()) {
+            upperValues.push(lowerValues.pop());
+        }
+        for (int i = 0; i < result.length; i++) {
+            result[i] = upperValues.pop();
+        }
 
         return result;
 
