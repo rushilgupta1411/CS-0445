@@ -49,76 +49,231 @@ public class CuckooPushbackTable<K, V> {
     // YOUR CODE
     // ==================================================================
 
-    // TODO: fields -- the buckets (ConveyorBucket[]), the stash (DrumStash), the
-    // coefficients a1, b1, a2, b2 of the two hash functions, m, size, maxKicks, and
-    // the counters behind the statistics (see the README).
+    private final ConveyorBucket<K, V>[] buckets;
+    private final DrumStash<K, V> stash;
+    private final long a1, b1, a2, b2;
+    private final int maxKicks;
+    private int size;
+    private long lookupHits, lookupMisses;
+    private long hitComparisons, missComparisons;
+    private long insertSteps;
+    private int maxInsertSteps;
 
     /**
-     * The one constructor. Validate the arguments (IllegalArgumentException): buckets >= 2,
-     * bucketCapacity >= 1, stashCapacity >= 0, maxKicks >= 1, a1 and a2 in 1 .. P-1,
-     * b1 and b2 in 0 .. P-1.
-     *
-     * @param a1 multiplier of h1,  @param b1 offset of h1:  h1(key, m) = hash(a1, b1, key, m)
-     * @param a2 multiplier of h2,  @param b2 offset of h2:  h2(key, m) = hash(a2, b2, key, m)
+     * Creates a fixed-size table with the supplied hash coefficients.
+     * @throws IllegalArgumentException if dimensions or coefficients are invalid
      */
+    @SuppressWarnings("unchecked")
     public CuckooPushbackTable(int buckets, int bucketCapacity, int stashCapacity, int maxKicks,
                                long a1, long b1, long a2, long b2) {
-        // TODO
+        if (buckets < 2 || bucketCapacity < 1 || stashCapacity < 0 || maxKicks < 1
+                || a1 < 1 || a1 >= P || a2 < 1 || a2 >= P
+                || b1 < 0 || b1 >= P || b2 < 0 || b2 >= P) {
+            throw new IllegalArgumentException("Invalid table dimensions or hash coefficients.");
+        }
+        this.buckets = (ConveyorBucket<K, V>[]) new ConveyorBucket<?, ?>[buckets];
+        for (int i = 0; i < buckets; i++) {
+            this.buckets[i] = new ConveyorBucket<>(bucketCapacity);
+        }
+        stash = new DrumStash<>(stashCapacity);
+        this.maxKicks = maxKicks;
+        this.a1 = a1;
+        this.b1 = b1;
+        this.a2 = a2;
+        this.b2 = b2;
     }
 
-    // ---------------- operations ----------------
+    /** Inserts or replaces; failed insertion restores the exact original layout. */
+    public V put(K key, V value) {
+        Entry<K, V> existing = find(key, false);
+        if (existing != null) {
+            V previous = existing.getValue();
+            existing.setValue(value);
+            return previous;
+        }
+        Entry<K, V> entry = new Entry<>(key, value);
+        int first = home1(key);
+        int second = home2(key);
+        int steps;
+        if (!buckets[first].isFull()) {
+            buckets[first].pushLeft(entry);
+            steps = 1;
+        } else if (!buckets[second].isFull()) {
+            buckets[second].pushLeft(entry);
+            steps = 1;
+        } else {
+            steps = insertWithKicks(entry, first);
+        }
+        // Commit statistics only after the complete insertion has succeeded.
+        size++;
+        insertSteps += steps;
+        maxInsertSteps = Math.max(maxInsertSteps, steps);
+        return null;
+    }
 
     /**
-     * Inserts or replaces; returns the previous value or null. If the entry cannot be placed
-     * (the kick limit was reached and the stash is full), the table is restored to exactly what
-     * it was and TableCapacityException is thrown.
+     * Runs the eviction chain, journaling the target bucket of every kick.
+     * Only full-bucket pushes need undoing: a non-evicting push finishes the
+     * operation successfully, as does parking the final entry in the stash.
      */
-    public V put(K key, V value) { throw new UnsupportedOperationException("put() not implemented yet"); }
+    private int insertWithKicks(Entry<K, V> entry, int target) {
+        int[] history = new int[maxKicks];
+        Entry<K, V> held = entry;
+        for (int kicks = 0; kicks < maxKicks; kicks++) {
+            history[kicks] = target;
+            held = buckets[target].pushLeft(held);
+            int first = home1(held.getKey());
+            int alternate = first == target ? home2(held.getKey()) : first;
+            if (!buckets[alternate].isFull()) {
+                buckets[alternate].pushLeft(held);
+                return kicks + 2;
+            }
+            target = alternate;
+        }
+        if (stash.insert(held)) {
+            return maxKicks;
+        }
+        // Undo newest-first. Each popped entry is what the preceding push
+        // evicted; the final popped entry is the rejected new key.
+        for (int i = maxKicks - 1; i >= 0; i--) {
+            ConveyorBucket<K, V> bucket = buckets[history[i]];
+            Entry<K, V> pushed = bucket.popLeft();
+            bucket.appendRight(held);
+            held = pushed;
+        }
+        throw new TableCapacityException("Kick limit reached and stash is full.");
+    }
 
-    /** @return the value, or null if absent. Counts as a lookup in the statistics. */
-    public V get(K key) { throw new UnsupportedOperationException("get() not implemented yet"); }
+    /** Returns the associated value or null; records one public lookup. */
+    public V get(K key) {
+        Entry<K, V> entry = find(key, true);
+        return entry == null ? null : entry.getValue();
+    }
 
-    /** @return true if present. Counts as a lookup in the statistics, exactly like get(). */
-    public boolean containsKey(K key) { throw new UnsupportedOperationException("containsKey() not implemented yet"); }
+    /** Records one lookup; a key mapped to null is still present. */
+    public boolean containsKey(K key) {
+        return find(key, true) != null;
+    }
 
-    /** @return the removed value, or null if absent */
-    public V remove(K key) { throw new UnsupportedOperationException("remove() not implemented yet"); }
+    /** Removes a key, then gives every stashed entry one chance to return. */
+    public V remove(K key) {
+        requireKey(key);
+        Entry<K, V> removed = buckets[home1(key)].removeKey(key);
+        if (removed == null) {
+            removed = buckets[home2(key)].removeKey(key);
+        }
+        if (removed == null && stash.size() > 0) {
+            removed = stash.remove(key);
+        }
+        if (removed == null) {
+            return null;
+        }
+        size--;
+        drainStash();
+        return removed.getValue();
+    }
 
-    // ---------------- inspection ----------------
+    private void drainStash() {
+        // Visit through the opening only, completing a full cycle even when
+        // entries move out, so the stash's logical alignment is preserved.
+        for (int step = 0; step < stash.capacity(); step++) {
+            Entry<K, V> entry = stash.peekOpening();
+            if (entry != null) {
+                int first = home1(entry.getKey());
+                int second = home2(entry.getKey());
+                if (!buckets[first].isFull()) {
+                    buckets[first].pushLeft(stash.eject());
+                } else if (!buckets[second].isFull()) {
+                    buckets[second].pushLeft(stash.eject());
+                }
+            }
+            stash.rotate(1);
+        }
+    }
 
-    /** @return number of entries, including those in the stash */
-    public int size() { throw new UnsupportedOperationException(); }
+    private Entry<K, V> find(K key, boolean countLookup) {
+        requireKey(key);
+        long comparisons = 0;
+        Entry<K, V> found = null;
+        int first = home1(key);
+        int second = home2(key);
+        for (int choice = 0; choice < 2; choice++) {
+            ConveyorBucket<K, V> bucket = buckets[choice == 0 ? first : second];
+            int slot = bucket.indexOf(key);
+            comparisons += slot < 0 ? bucket.size() : slot + 1;
+            if (slot >= 0) {
+                found = bucket.get(slot);
+                break;
+            }
+        }
+        if (found == null && stash.size() > 0) {
+            found = stash.find(key);
+            comparisons += stash.lastFindComparisons();
+        }
+        if (countLookup) {
+            if (found == null) {
+                lookupMisses++;
+                missComparisons += comparisons;
+            } else {
+                lookupHits++;
+                hitComparisons += comparisons;
+            }
+        }
+        return found;
+    }
 
-    /** @return size() / (bucketCount() * bucketCapacity()) */
-    public double loadFactor() { throw new UnsupportedOperationException(); }
+    private void requireKey(K key) {
+        if (key == null) {
+            throw new IllegalArgumentException("Null keys are not allowed.");
+        }
+    }
 
-    public int bucketCount() { throw new UnsupportedOperationException(); }
+    private int home1(K key) {
+        return hash(a1, b1, key, buckets.length);
+    }
 
-    public int bucketCapacity() { throw new UnsupportedOperationException(); }
+    private int home2(K key) {
+        int first = home1(key);
+        int second = hash(a2, b2, key, buckets.length);
+        return second == first ? (second + 1) % buckets.length : second;
+    }
 
-    /** @return the entry in that slot of that bucket (slot 0 = LEFT mouth), or null if empty */
-    public Entry<K, V> getEntryAt(int bucket, int slot) { throw new UnsupportedOperationException(); }
+    public int size() { return size; }
 
-    public int stashCapacity() { throw new UnsupportedOperationException(); }
+    public double loadFactor() {
+        return size / ((double) bucketCount() * bucketCapacity());
+    }
 
-    public int stashSize() { throw new UnsupportedOperationException(); }
+    public int bucketCount() { return buckets.length; }
+    public int bucketCapacity() { return buckets[0].capacity(); }
 
-    /** INSPECTION ONLY (tests, visualizers): the entry at logical slot i of the stash drum (0 = opening), or null.
-     *  The table's own logic must reach the drum only through its opening. */
-    public Entry<K, V> getStashAt(int i) { throw new UnsupportedOperationException(); }
+    public Entry<K, V> getEntryAt(int bucket, int slot) {
+        if (bucket < 0 || bucket >= buckets.length) {
+            throw new IndexOutOfBoundsException("bucket " + bucket);
+        }
+        return buckets[bucket].get(slot);
+    }
 
-    // ---------------- statistics (see the README for exactly when each one changes) ----------------
+    public int stashCapacity() { return stash.capacity(); }
+    public int stashSize() { return stash.size(); }
 
-    public long getLookupHits() { throw new UnsupportedOperationException(); }
-    public long getLookupMisses() { throw new UnsupportedOperationException(); }
-    public long getTotalHitComparisons() { throw new UnsupportedOperationException(); }
-    public long getTotalMissComparisons() { throw new UnsupportedOperationException(); }
-    public long getTotalInsertSteps() { throw new UnsupportedOperationException(); }
-    public int getMaxInsertSteps() { throw new UnsupportedOperationException(); }
+    /** Inspection only; table operations never call this method. */
+    public Entry<K, V> getStashAt(int i) { return stash.getAt(i); }
 
-    /** Zeroes every statistics counter. */
-    public void resetOperationCounters() { throw new UnsupportedOperationException(); }
+    public long getLookupHits() { return lookupHits; }
+    public long getLookupMisses() { return lookupMisses; }
+    public long getTotalHitComparisons() { return hitComparisons; }
+    public long getTotalMissComparisons() { return missComparisons; }
+    public long getTotalInsertSteps() { return insertSteps; }
+    public int getMaxInsertSteps() { return maxInsertSteps; }
 
-    // BONUS (visualizer) only: if your visualizer needs more information than the inspection methods
-    // above give, design and add your own hooks here (see the README). Leave them out otherwise.
+    /** Resets counters without changing contents or layout. */
+    public void resetOperationCounters() {
+        lookupHits = 0;
+        lookupMisses = 0;
+        hitComparisons = 0;
+        missComparisons = 0;
+        insertSteps = 0;
+        maxInsertSteps = 0;
+    }
 }
