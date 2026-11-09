@@ -1,13 +1,15 @@
+import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 /** Bonus lab for CS 0445. A HashLLDS is a hybrid of a linear-probing hash table and a linked list.
- * Key type is String and Value type is generic. HashLLDS allows both hash table 
+ * Key type is String and Value type is generic. HashLLDS allows both hash table
  * access using get() and FIFO sequential access using an Iterator.
 * @author Sherif Khattab
 * Some code adopted from Textbook's code by Frank M. Carrano and Timothy M. Henry
 **/
 
-import java.util.Iterator;
-import java.util.NoSuchElementException;
+
+
 
 public class HashLLDS<V> implements Iterable<V> {
   private static final int INIT_CAPACITY = 13;
@@ -17,6 +19,7 @@ public class HashLLDS<V> implements Iterable<V> {
   private Node<V>[] entries; // the hash table
   private Node<V> head; // head of the linked list
   private Node<V> tail; // tail of the linked list
+  private int modifications; // structural changes, for fail-fast iterators
 
   // create an empty hash table
   public HashLLDS() {
@@ -35,23 +38,28 @@ public class HashLLDS<V> implements Iterable<V> {
 
   // insert the key-value pair into the hash table
   public void put(String key, V val) {
-    boolean found = false;
     // follow the linear-probing probe sequence
     int i;
     for (i = hash(key); entries[i] != null; i = (i + 1) % M) {
       // update value if key already exists
       if (entries[i].key.equals(key)) {
         entries[i].value = val;
-        found = true;
+        return;
       }
     }
 
-    if (!found) {// key wasn't found; need to insert an new entry
+    { // Key was not found; insert a new entry.
       // i points to an empty entry in the hash table
       entries[i] = new Node<V>(key, val);
 
-      // TODO: insert the node entries[i] into the tail of the linked list in O(1)
-      // time. Don't forget the edge case of inserting into an empty linked list
+      // The table and list refer to the same node, so updates stay visible.
+      if (tail == null) {
+        head = entries[i];
+      } else {
+        tail.next = entries[i];
+      }
+      tail = entries[i];
+      modifications++;
 
       N++;
       // double table size if 50% full
@@ -83,9 +91,10 @@ public class HashLLDS<V> implements Iterable<V> {
   private void resize(int capacity) {
     HashLLDS<V> temp = new HashLLDS<V>(capacity);
 
-    // TODO: reinsert the existing entries into temp in original FIFO order.
-    // You will need to iterate over the linked list and possibly call
-    // temp.put().
+    // Rebuild in list order rather than hash-slot order to preserve FIFO.
+    for (Node<V> current = head; current != null; current = current.next) {
+      temp.put(current.key, current.value);
+    }
 
     //shallow copy from temp's variables into this
     entries = temp.entries;
@@ -117,29 +126,82 @@ public class HashLLDS<V> implements Iterable<V> {
   }
 
   public Iterator<V> iterator() {
-    // TODO implement this method
-    return null;
+    return new MyIterator();
   }
 
   private class MyIterator implements Iterator<V> {
-    // TODO add instance variable(s) to keep track of
-    // iterator's cursor 
+    private Node<V> cursor;
+    private Node<V> previous;
+    private Node<V> lastReturned;
+    private Node<V> beforeLastReturned;
+    private int expectedModifications;
+
     private MyIterator() {
-      // TODO implement the constructor
+      cursor = head;
+      expectedModifications = modifications;
+    }
+
+    private void checkModification() {
+      if (expectedModifications != modifications) {
+        throw new java.util.ConcurrentModificationException();
+      }
     }
 
     public boolean hasNext() {
-      // TODO implement this method
-      return false;
+      checkModification();
+      return cursor != null;
     }
 
     public V next() {
-      // TODO implement this method to return the next value
-      return null;
+      checkModification();
+      if (cursor == null) {
+        throw new NoSuchElementException();
+      }
+      beforeLastReturned = previous;
+      lastReturned = cursor;
+      previous = cursor;
+      cursor = cursor.next;
+      return lastReturned.value;
     }
 
+    // Post-lab follow-up: remove the last returned entry from BOTH structures.
     public void remove() {
-      throw new UnsupportedOperationException("remove() is not implemented for this iterator.");
+      checkModification();
+      if (lastReturned == null) {
+        throw new IllegalStateException("Call next() once before each remove().");
+      }
+      if (beforeLastReturned == null) {
+        head = cursor;
+      } else {
+        beforeLastReturned.next = cursor;
+      }
+      if (tail == lastReturned) {
+        tail = beforeLastReturned;
+      }
+      previous = beforeLastReturned;
+
+      int slot = hash(lastReturned.key);
+      while (entries[slot] != lastReturned) {
+        slot = (slot + 1) % M;
+      }
+      entries[slot] = null;
+      // A hole must not break searches for later keys in this probe cluster.
+      // Rehash existing nodes without relinking them or changing their order.
+      slot = (slot + 1) % M;
+      while (entries[slot] != null) {
+        Node<V> displaced = entries[slot];
+        entries[slot] = null;
+        int target = hash(displaced.key);
+        while (entries[target] != null) {
+          target = (target + 1) % M;
+        }
+        entries[target] = displaced;
+        slot = (slot + 1) % M;
+      }
+      N--;
+      modifications++;
+      expectedModifications = modifications;
+      lastReturned = null;
     }
   }
 
