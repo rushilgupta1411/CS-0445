@@ -1,5 +1,7 @@
 # Assignment 5: Meowdoku Solver (Backtracking)
 
+>⚙️ Note: This assignment was developed with the assistance of an AI assistant to facilitate brainstorming and generate portions of the scaffolding and documentation files, thereby accelerating the prototyping process. This was done over multiple iterations, with full manual read-through and edits.
+
 ![A 5x5 Meowdoku board with one cat in each colored region](img/meowdoku_example.png)
 
 *Illustration drawn for this assignment. Game: Meowdoku by Oakever Games (this course is not affiliated with the game's publisher).*
@@ -143,3 +145,5 @@ If your code does not compile, you get 0 on everything. The autograder shows you
 - When a recursive call fails, undo what you changed before you try the next choice.
 - Which earlier placements can a new cat touch? Because you place row by row, that is a short list.
 - Searching an entire tree to prove `NO SOLUTION` must also finish in time.
+
+
