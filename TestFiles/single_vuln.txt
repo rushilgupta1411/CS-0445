@@ -1,5 +1,0 @@
-1
-# Nodes (format: node vulnerable?)
-Solo true
-
-# Edges (format: node1 node2 latency encryption_level)

@@ -1,288 +1,145 @@
-# CS 1501 — Assignment 5: PittGuard: Hardening the Network
+# Assignment 5: Meowdoku Solver (Backtracking)
 
-> ⚙️ *Note:* This assignment was developed with the assistance of an AI assistant to facilitate brainstorming and generate portions of the scaffolding and documentation files, thereby accelerating the prototyping process. This was done over multiple iterations, with full manual read-through and edits.
+![A 5x5 Meowdoku board with one cat in each colored region](img/meowdoku_example.png)
 
-## 🔐 Security Context
+*Illustration drawn for this assignment. Game: Meowdoku by Oakever Games (this course is not affiliated with the game's publisher).*
 
-After an incident, a security team asks two questions about the network:
+## Background
 
-1. **Which links would an attacker use?** An attacker does not need every link, only the cheapest set that reaches every machine.
-2. **Which vulnerable machines should we patch first?** Patching takes a machine offline, and each night there is only a limited maintenance window.
+Meowdoku is played on an N×N grid that is divided into N colored regions. You place N cats so that:
 
-In this assignment you will answer both, one step at a time, and the first step feeds the second:
+1. Every region contains exactly one cat.
+2. No two cats share a row or a column.
+3. No two cats touch, including diagonally.
 
-* 🌲 **A minimum spanning tree** finds the attacker's cheapest campaign (the *backbone*).
-* 🎒 **Dynamic programming (0/1 knapsack)** picks the patches that remove the most exposure within the maintenance window.
+Your job is to write a program that solves a Meowdoku board using **backtracking**.
 
-## 📘 Objective
+## Your task
 
-Implement a command-line tool, **PittGuard**, that reads a network and a maintenance budget and prints two lines, one per step:
+Write a Java program in a **single class named `Meowdoku`, in a single file `Meowdoku.java`**. It must:
 
-```
-backbone: ...
-best: ...
-```
+1. Read a puzzle from the **file whose path is given as the first command-line argument**.
+2. Solve it with a backtracking search.
+3. Print a solution (or `NO SOLUTION`) to **standard output**.
 
-**The first line is graded on its own**, so a mistake in Step 2 does not cost you the points for Step 1. Step 2 builds on Step 1, so it can only be correct if the backbone is.
-
----
-
-# 🧱 Graph File Format
+How you organize the code inside that class is up to you: fields, helper methods and a nested class or two are all fine, as long as `Meowdoku` has a `public static void main(String[] args)` and the program behaves as described here. **Only your program's output is graded.**
 
 ```
-<num_nodes>
-node_id vulnerable          (num_nodes lines)
-...
-node1 node2 latency encryption_level      (any number of lines, may be zero)
-...
+javac Meowdoku.java
+java Meowdoku puzzles/pub_a3_n5.txt
 ```
 
-* `node_id` — a string with no spaces. IDs are **case-sensitive** (`a` and `A` are different machines).
-* `vulnerable` — exactly `true` or `false`.
-* `latency` — a **positive integer**.
-* `encryption_level` — `1`, `2` or `3` (3 is the strongest).
-* Blank lines and lines that start with `#` are ignored. Fields are separated by any amount of spaces or tabs. Files may use Windows (`\r\n`) line endings.
-* Links are **undirected**: the link `A B 3 3` can be used in both directions.
+Rules for your submission:
 
-> ⚠️ **Node names can be longer than one letter.** The examples mostly use single letters like `A` and `C`, but the tests use multi-character IDs such as `Gateway`, `db-server`, `10.0.0.1`, `web_01` and `N0042`. Do not store IDs as a `char`, do not compute an index with `id.charAt(0) - 'A'`, and do not assume an ID is one character long. Keep IDs as `String`s and map them to array indices (for example with a `HashMap<String, Integer>`).
+- Your program must read the puzzle from the file named in `args[0]`. **Do not read the puzzle from standard input** and do not use input redirection (`< file`).
+- Your solution is **one file, `Meowdoku.java`, at the top level of your repository**. The whole repository gets submitted, but only `Meowdoku.java` is compiled, so do not depend on any other file you wrote. No other top-level classes.
+- No `package` statement. Use only the Java standard library.
+- Print only the answer to standard output. Send any debugging text to standard error (`System.err`), or remove it before you submit.
 
-**You may assume every input file is well formed**, so you do not need to validate it. In addition, every test file has **no self-loops and no duplicate links**, and the **backbone (Step 1) is unique**, so any correct spanning-tree algorithm gives the same tree.
-
-### 📄 Example file used throughout: `TestFiles/campus.txt`
+## Input file format
 
 ```
-10
-# Nodes (format: node vulnerable?)
-P false
-A true
-B true
-C true
-D true
-E true
-F true
-G false
-H true
-Z true
-
-# Edges (format: node1 node2 latency encryption_level)
-A B 3 3
-B C 2 3
-C D 2 3
-C E 4 2
-D E 1 3
-P C 4 3
-P F 6 1
-P G 2 3
-G H 5 2
-F H 1 3
+5
+CAABB
+CCABB
+CCDDB
+EDDDB
+EEEEE
 ```
 
-Vulnerable machines: A B C D E F H Z. Safe machines: P and G. Machine Z has no links at all.
+- Line 1 is N, with 1 ≤ N ≤ 15.
+- The next N lines each contain N uppercase letters with no spaces. Each letter names a region. There are exactly N different letters, and every region is a connected group of cells.
+- Be tolerant of Windows line endings (`\r\n`), spaces at the ends of lines and extra blank lines at the end of the file.
 
----
+## Output format
 
-# 📏 Two Measures of a Link
+- If the board has a solution, print N lines of N characters each: `*` where a cat goes and `.` everywhere else.
+- If the board has no solution, print exactly `NO SOLUTION`.
 
-Every link has two numbers computed from its latency and encryption level. They answer different questions, so do not mix them up.
+**Any valid solution is accepted.** Many boards have more than one answer, and the grader checks your answer against the rules instead of comparing it to a fixed file. You do not need to find all solutions, and you should stop as soon as you have found one.
 
-| Measure | Formula | Used in | What it means |
-| ------- | ------- | ------- | ------------- |
-| **Attacker effort** | `latency × encryption_level` | Step 1 (backbone) | How hard the link is for an attacker to break and cross. Slow, strongly encrypted links take longer. Fast, weakly encrypted links are cheap targets. |
-| **Downtime** (hours) | `latency × (1 + (3 − encryption_level) / 10)` | Step 2 (patch cost) | How long it takes to re-establish and re-verify the link after a machine is patched. Slow and weakly encrypted links take longer. |
+## Examples
 
-For downtime, level 3 → ×1.0, level 2 → ×1.1, level 1 → ×1.2.
-
-> ⚠️ **Precision.** Attacker effort is already a whole number. Downtime is always a whole number of tenths of an hour (`latency × (13 − level)` tenths), so **store every downtime and the budget as integers in tenths**. Do not use `double` for the budget comparison: `cost <= budget` must be exact.
-
----
-
-# 🧩 The Two Steps
-
-## 🌲 Step 1 — The backbone (minimum spanning tree)
-
-The **backbone** is the cheapest set of links, by **attacker effort**, that keeps every group of machines connected: the attacker's cheapest campaign. If the network is split into several groups, the backbone is a minimum spanning *forest*, one tree per group. With `n` machines in `c` groups it always has `n − c` links.
-
-* This step uses the **whole network**: every machine and every link, vulnerable or not.
-* Any link that is not in the backbone is redundant: it closes a loop, and it is the most expensive link in that loop.
-* A machine's **backbone degree** is the number of backbone links that touch it. You need this in Step 2.
-
-Output line:
+**Example 1** (see the picture above; this board has several valid answers). One valid output:
 
 ```
-backbone: <total attacker effort of the backbone> <number of backbone links>
+*....
+..*..
+....*
+.*...
+...*.
 ```
 
-## 🎒 Step 2 — The patch plan (0/1 knapsack)
-
-You have a maintenance window of `--budget` hours. Choose which machines to patch.
-
-* **Only vulnerable machines can be patched.** Safe machines are never candidates.
-* The **downtime** of a machine is the sum of the **downtime of all of its links**, including links to safe machines. A machine with no links has downtime 0.
-* The **value** of a machine is its **exposure**:
+**Example 2** (no solution), input `puzzles/pub_b1_n5.txt`:
 
 ```
-value = 1 + backbone degree
+5
+AAAAA
+ABBBA
+ACCCA
+ADDDA
+AAAAE
 ```
 
-  The backbone degree counts the routes an attacker would use through the machine, so a machine that sits on many of them is worth more to protect. The `1 +` makes every machine worth something.
-* Choose the set of machines whose **total downtime is at most the budget** and whose **total value is as large as possible**. Each machine can be chosen at most once.
-
-Output line:
+Output:
 
 ```
-best: <the largest total value>
+NO SOLUTION
 ```
 
-You print only the best total value, not the set of machines (several different sets can reach the same value).
-
-> 💡 **Why each machine counts on its own.** Machines are patched one after another: a machine is taken offline, patched, brought back and its links are re-verified, then the next one is done. So each machine's downtime and value do not depend on which other machines you choose, and the totals are simple sums. A link between two machines you both patch is re-verified once from each end, so its downtime counts in both machines' downtime. This independence is what makes the plan a 0/1 knapsack.
-
----
-
-# 💻 Command-Line Interface
-
-```bash
-java PittGuard --input <file> --budget <hours>
-```
-
-* `--budget` — a non-negative number of hours with **at most one decimal place** (`0`, `5`, `12.5`, `20.0` are fine; `-1`, `1.25`, `abc` are errors).
-
-## 🧾 Output Format
-
-Exactly two lines, in this order, with single spaces between items and no trailing spaces:
+**Example 3**, input `puzzles/pub_a2_n4.txt`:
 
 ```
-backbone: <total effort> <link count>
-best: <value>
+4
+AABB
+AABB
+CCDD
+CCDD
 ```
 
-If the network has no machines, print `backbone: 0 0` and `best: 0`.
-
----
-
-# 🧮 Worked Example (`campus.txt`)
-
-## Step 1
-
-Attacker effort of each link (`latency × level`):
-
-| Link | A–B | B–C | C–D | C–E | D–E | P–C | P–F | P–G | G–H | F–H |
-| ---- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Effort | 9 | 6 | 6 | 8 | 3 | 12 | 6 | 6 | 10 | 3 |
-
-Two links are redundant:
-
-* `C–E` (8) closes the triangle C–D–E, where `C–D` (6) and `D–E` (3) are cheaper.
-* `G–H` (10) closes the loop P–F–H–G, where the other three links cost 6, 3 and 6.
-
-The other 8 links form the backbone, with total effort 9 + 6 + 6 + 3 + 12 + 6 + 6 + 3 = 51. (`Z` is its own group with no links, so there are 10 machines in 2 groups and 8 backbone links.)
+One valid output (another valid answer exists):
 
 ```
-backbone: 51 8
+.*..
+...*
+*...
+..*.
 ```
 
-Backbone degrees: P 3, C 3, B 2, D 2, F 2, A 1, E 1, G 1, H 1, Z 0.
+## Testing your work locally
 
-## Step 2
-
-Downtime of a link (hours): A–B 3.0, B–C 2.0, C–D 2.0, C–E 4.4, D–E 1.0, P–C 4.0, P–F 7.2, P–G 2.0, G–H 5.5, F–H 1.0.
-
-The candidates are the vulnerable machines:
-
-| Machine | Links | Downtime | Backbone degree | Value |
-| ------- | ----- | -------- | :-------------: | :---: |
-| A | A–B | 3.0 | 1 | 2 |
-| B | A–B, B–C | 5.0 | 2 | 3 |
-| C | B–C, C–D, C–E, P–C | 12.4 | 3 | 4 |
-| D | C–D, D–E | 3.0 | 2 | 3 |
-| E | C–E, D–E | 5.4 | 1 | 2 |
-| F | P–F, F–H | 8.2 | 2 | 3 |
-| H | G–H, F–H | 6.5 | 1 | 2 |
-| Z | none | 0.0 | 0 | 1 |
-
-Results for different maintenance windows:
-
-| Budget (hours) | 0 | 3.0 | 8.0 | 12.0 | 20.0 | 30.0 | 60.0 |
-| -------------- | :-: | :-: | :-: | :--: | :--: | :--: | :--: |
-| `best` | 1 | 4 | 7 | 9 | 12 | 15 | 20 |
-
-For example, with 10.0 hours the best plan is B, D and Z: 5.0 + 3.0 + 0.0 = 8.0 hours for a value of 3 + 3 + 1 = 7, and nothing else fits in the remaining 2.0 hours. With 0 hours you can still patch Z, because it has no downtime. With 60.0 hours everything fits (the total downtime is 43.5), so `best` is the sum of all values (20).
-
-```bash
-java PittGuard --input TestFiles/campus.txt --budget 10.0
-```
-```
-backbone: 51 8
-best: 7
-```
-
----
-
-# ⚠️ Errors
-
-For any of the following, print **one clear message to `stderr`**, print **nothing to `stdout`**, and exit with a **non-zero** status. For every valid input exit with status **0**, including when the budget is 0. Your program must catch the problem itself: a crash with an uncaught exception or stack trace does not count.
-
-* `--input` or `--budget` is missing, an unknown flag is given, or a flag has no value.
-* `--budget` is not a non-negative number with at most one decimal place.
-* The `--input` file cannot be read.
-
----
-
-# 🧪 Testing Your Work
+This folder contains public test puzzles in `puzzles/` and a test harness, `run_tests.py`. The harness compiles your `Meowdoku.java`, runs your program on each puzzle, and checks the output with the same validator the autograder uses. It needs Python 3 and a JDK.
 
 ```
-TestFiles/            # graphs (campus.txt is the README example)
-tests/cases.tsv       # test cases: name, visibility, command-line arguments
-tests/expected/       # expected output of every case
-run_tests.sh          # test runner
-PittGuard.java        # the only file you edit and submit
+python3 run_tests.py                     # compile ./Meowdoku.java and run every public puzzle
+python3 run_tests.py --src path/to/src   # the folder that contains Meowdoku.java
+python3 run_tests.py --one puzzles/pub_c1_n6.txt   # run one puzzle and see your output
 ```
 
-```bash
-bash run_tests.sh                  # compile and run the provided tests
-bash run_tests.sh --show           # also show a diff for each failure
-bash run_tests.sh --only campus    # run only tests whose name contains "campus"
-```
+The harness runs all 19 public puzzles, including the two that check how the file is passed to your program (a path with spaces, and junk on standard input). Passing all of them locally is worth 80 of the 100 points. The other 20 points come from hidden boards, including the largest size (N = 15), so make your own test puzzles too. Think about N = 1, boards with no solution, and boards with many solutions.
 
-(On Windows use Git Bash or WSL.) The provided tests are only part of what Gradescope runs; the rest are hidden until grades are published. On Gradescope, the `backbone:` line and the `best:` line of every graph are checked by **separate** tests. **Write your own small graphs** and trace them by hand, because the hidden tests are built around these situations:
+## Grading
 
-* a network with no machines, with a single machine, or with no links at all;
-* a network that is already a tree (every link is in the backbone) and one with many loops;
-* a network split into several groups (the backbone is a forest with `n − c` links);
-* a loop where a link is redundant, and weakly encrypted links, which cost more downtime but less attacker effort;
-* a budget of 0, a budget exactly equal to a machine's downtime, and a budget larger than everything;
-* machines with no links (downtime 0), and safe machines that have many backbone links but cannot be patched;
-* multi-character and case-sensitive node IDs.
+Your grade is **100% autograder tests**. There is no style or manual grading. Each test is all-or-nothing, and each run of your program has a **10 second** limit, including JVM start-up.
 
-Each test graph has at most about 500 machines and budgets of at most 200.0 hours, and each test must finish in **10 seconds**.
+| Category | What it checks | Public | Hidden | Total |
+|---|---|---:|---:|---:|
+| Small boards | Solvable boards with N ≤ 5 | 16 | 4 | 20 |
+| Unsolvable boards | `NO SOLUTION`, including bigger boards where you must search the entire tree | 16 | 4 | 20 |
+| Many solutions | Boards with many valid answers; any one is accepted | 12 | 3 | 15 |
+| Medium boards | Solvable boards with N from 6 to 9 | 16 | 4 | 20 |
+| Large boards | Boards with N from 12 to 15, where pruning matters | 12 | 3 | 15 |
+| File handling | Path argument, spaces in the path, stdin ignored, Windows line endings | 8 | 2 | 10 |
+| **Total** | | **80** | **20** | **100** |
 
-## 💡 Hints
+The public tests (80 points) use the puzzles in your `puzzles/` folder, and their results show up as soon as you submit to Gradescope. The hidden tests (20 points) use other boards and are run on every submission too, but their results are only revealed after grades are published. Passing every public puzzle locally means you are on track for 80 points, but write your own extra boards to be confident about the rest.
 
-* **Step 1:** sort the links by attacker effort and add each one that does not join two machines already connected (a union-find structure makes this fast).
-* **Step 2:** this is the standard 0/1 knapsack, with the budget counted in tenths of an hour. Use a one-dimensional array indexed by budget and loop over the budget **downward** for each machine, so a machine is used at most once.
+If your code does not compile, you get 0 on everything. The autograder shows you the compiler's message.
 
----
+## Hints
 
-## 🚀 Deliverable
-
-Submit your completed Java program to **Gradescope**. Only this file is submitted:
-
-```
-PittGuard.java
-```
-
-It must compile with standard Java (17 or newer), with no external libraries and no package declaration.
-
-## 📊 Grading Rubric
-
-| Item | Points |
-| ---- | :----: |
-| ✅ Autograder: Step 1, the `backbone:` line | 40 |
-| ✅ Autograder: Step 2, the `best:` line | 55 |
-| ✅ Autograder: command-line errors | 5 |
-
-### 💡 Grading Guidelines
-
-* Each output line is checked by its **own** tests, so a bug in Step 2 does not cost you the Step 1 points. The exception is that Step 2 uses the backbone from Step 1: it can only be correct if the backbone is.
-* Test cases include both visible and hidden scenarios to assess correctness and edge handling.
-* If the autograder score is below 60%, the code is reviewed manually for partial credit (max 60% of the available points).
+- Every row of a solution contains exactly one cat, so you can place cats one row at a time.
+- Decide before you recurse whether a placement is legal. Pruning bad branches early is what makes N = 15 fast.
+- When a recursive call fails, undo what you changed before you try the next choice.
+- Which earlier placements can a new cat touch? Because you place row by row, that is a short list.
+- Searching an entire tree to prove `NO SOLUTION` must also finish in time.
