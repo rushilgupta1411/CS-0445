@@ -15,14 +15,24 @@ public class RecursiveStringReplace
      * @param  from   The character to be replaced.
      * @param  to   the character to change to.
      * @return     A new string with the appropriate characters replaced.
+     * @throws NullPointerException if s is null.
      */
     public String replace(String s, char from, char to)
     {
-        String result = null;
+        // Base case: an empty string has no characters left to replace.
+        if (s.isEmpty())
+        {
+            return "";
+        }
 
-        // IMPLEMENT THIS RECURSIVE METHOD
+        char first = s.charAt(0);
+        if (first == from)
+        {
+            first = to;
+        }
 
-        return result;
+        // Replace the first character and recursively process the shorter tail.
+        return first + replace(s.substring(1), from, to);
     }
 
 
